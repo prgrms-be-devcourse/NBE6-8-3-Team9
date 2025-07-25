@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @DisplayName("WalletController 통합 테스트")
 @Transactional
-@Tag("integration")
+@Tag("wallet")
 public class IntegrationWalletControllerTest {
 
     @Autowired
