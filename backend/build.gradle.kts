@@ -85,3 +85,29 @@ tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
     shouldRunAfter(tasks["test"])
 }
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    testLogging {
+        events("PASSED", "FAILED", "SKIPPED")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showCauses = true
+        showStackTraces = true
+    }
+
+    afterSuite(KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
+        if (desc.parent == null) {
+            println(
+                """
+                ── $name summary ───────────────────────────
+                Result  : ${result.resultType}
+                Tests   : ${result.testCount}
+                Passed  : ${result.successfulTestCount}
+                Failed  : ${result.failedTestCount}
+                Skipped : ${result.skippedTestCount}
+                ──────────────────────────────────────────────
+                """.trimIndent()
+            )
+        }
+    }))
+}
