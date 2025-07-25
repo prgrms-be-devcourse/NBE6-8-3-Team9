@@ -4,10 +4,7 @@ import com.back.back9.domain.wallet.dto.ChargePointsRequest;
 import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.domain.wallet.repository.WalletRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @DisplayName("WalletController 통합 테스트")
 @Transactional
+@Tag("wallet")
 public class WalletControllerTest {
 
     @Autowired
