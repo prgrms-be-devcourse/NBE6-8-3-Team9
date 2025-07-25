@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     java
     id("org.springframework.boot") version "3.5.3"
@@ -86,28 +88,55 @@ tasks.register<Test>("integrationTest") {
     shouldRunAfter(tasks["test"])
 }
 
+
 tasks.withType<Test>().configureEach {
+
     useJUnitPlatform()
+
+    // 실패 테스트만 모아 마지막에 요약 출력
+    val failed = mutableListOf<Pair<TestDescriptor, TestResult>>()
+    val taskName = name
+
+    // 콘솔 출력 최소화: 실패만, 표준 출력 안 찍기
     testLogging {
-        events("PASSED", "FAILED", "SKIPPED")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        events("FAILED") // PASSED/Skipped/STDOUT 등은 끔
+        exceptionFormat = TestExceptionFormat.SHORT // FULL로 바꾸면 전체 스택
         showCauses = true
         showStackTraces = true
+        showStandardStreams = false
     }
 
-    afterSuite(KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
-        if (desc.parent == null) {
-            println(
-                """
-                ── $name summary ───────────────────────────
-                Result  : ${result.resultType}
-                Tests   : ${result.testCount}
-                Passed  : ${result.successfulTestCount}
-                Failed  : ${result.failedTestCount}
-                Skipped : ${result.skippedTestCount}
-                ──────────────────────────────────────────────
-                """.trimIndent()
-            )
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) {}
+        override fun beforeTest(testDescriptor: TestDescriptor) {}
+
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                failed += testDescriptor to result
+            }
         }
-    }))
+
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+            if (suite.parent == null) {
+                // 최상위(태스크) 요약만 출력
+                println("── $taskName summary ───────────────────────────")
+                println("Result  : ${result.resultType}")
+                println("Tests   : ${result.testCount},  Failed : ${result.failedTestCount}")
+                println("──────────────────────────────────────────────")
+
+                if (failed.isNotEmpty()) {
+                    println("❌ Failed tests (${failed.size}):")
+                    failed.forEach { (d, r) ->
+                        val ex = r.exceptions.firstOrNull()
+                        println(" - ${d.className}.${d.name}")
+                        if (ex != null) {
+                            // 실패 이유만 간단히
+                            println("   ${ex.javaClass.simpleName}: ${ex.message}")
+                        }
+                    }
+                    println("──────────────────────────────────────────────")
+                }
+            }
+        }
+    })
 }
