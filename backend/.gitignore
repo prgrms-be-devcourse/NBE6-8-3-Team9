@@ -43,4 +43,3 @@ db_dev.trace.db
 ### SECRET KEY ###
 .env
 
-.idea/
