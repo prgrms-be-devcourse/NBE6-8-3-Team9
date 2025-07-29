@@ -6,8 +6,8 @@ const mockAll: Transaction[] = [
     { date: "2025.07.25", name: "ETH Refund", type: "매도", amount: 8000, buySellAmount: 8000, qty: 0.22 },
 ];
 
-export default function CoinTransactionsPage({ params }: { params: { symbol: string } }) {
-    const { symbol } = params;
+export default async function CoinTransactionsPage({ params }: { params: Promise<{ symbol: string }> }) {
+    const { symbol } = await params;
     const data = mockAll.filter((t) => t.name.toLowerCase().includes(symbol.toLowerCase()));
 
     return (
