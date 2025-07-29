@@ -38,13 +38,26 @@ public class CoinService {
 
     // 코인 추가
     public Coin add(String symbol, String koreanName, String englishName) {
-        Coin coin = new Coin(symbol, koreanName, englishName);
+        Coin coin = Coin.builder()
+                .symbol(symbol)
+                .koreanName(koreanName)
+                .englishName(englishName)
+                .build();
         return coinRepository.save(coin);
     }
 
     // 코인 수정
     public void modify(Coin coin, String symbol, String koreanName, String englishName) {
-        coin.modify(symbol, koreanName, englishName);
+        if (symbol != null) {
+            coin.setSymbol(symbol);
+        }
+        if (koreanName != null) {
+            coin.setKoreanName(koreanName);
+        }
+        if (englishName != null) {
+            coin.setEnglishName(englishName);
+        }
+        coinRepository.save(coin);
     }
 
     // 마지막 코인 조회

@@ -1,5 +1,6 @@
 package com.back.back9.domain.wallet.controller;
 
+import com.back.back9.domain.wallet.dto.BuyCoinRequest;
 import com.back.back9.domain.wallet.dto.ChargePointsRequest;
 import com.back.back9.domain.wallet.dto.WalletResponse;
 import com.back.back9.domain.wallet.service.WalletService;
@@ -36,5 +37,29 @@ public class WalletController {
                 userId, request.getAmount());
 
         return walletService.chargeWallet(userId, request);
+    }
+
+    // 구매시 지갑 잔액 차감 및 코인 수량 업데이트
+    @PostMapping("/users/{userId}/purchase")
+    public ResponseEntity<WalletResponse> purchaseItem(
+            @PathVariable Long userId,
+            @Valid @RequestBody BuyCoinRequest request) {
+
+        log.info("코인 구매 요청 - 사용자 ID: {}, 구매 금액: {}, 코인 id: {}",
+                userId, request.amount(), request.coinId());
+
+        return walletService.purchaseItem(userId, request);
+    }
+
+    // 판매시 지갑 잔액 증가 및 코인 수량 차감
+    @PostMapping("/users/{userId}/sell")
+    public ResponseEntity<WalletResponse> sellItem(
+            @PathVariable Long userId,
+            @Valid @RequestBody BuyCoinRequest request) {
+
+        log.info("코인 판매 요청 - 사용자 ID: {}, 판매 금액: {}, 코인 id: {}",
+                userId, request.amount(), request.coinId());
+
+        return walletService.sellItem(userId, request);
     }
 }

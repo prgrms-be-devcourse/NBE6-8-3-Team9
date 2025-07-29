@@ -1,24 +1,16 @@
 package com.back.back9.domain.coin.entity;
 
 import com.back.back9.global.jpa.entity.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
-
-import static jakarta.persistence.GenerationType.IDENTITY;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class Coin extends BaseEntity {
 
@@ -32,18 +24,5 @@ public class Coin extends BaseEntity {
     @Column(unique = true)
     private String englishName;
 
-    @CreatedDate
-    private LocalDateTime created_at;
 
-    public Coin(String symbol, String koreanName, String englishName) {
-        this.symbol = symbol;
-        this.koreanName = koreanName;
-        this.englishName = englishName;
-    }
-
-    public void modify(String symbol, String koreanName, String englishName) {
-        this.symbol = symbol;
-        this.koreanName = koreanName;
-        this.englishName = englishName;
-    }
 }

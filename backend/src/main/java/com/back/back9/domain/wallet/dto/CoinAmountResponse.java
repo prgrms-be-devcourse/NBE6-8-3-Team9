@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 // 코인별 수량 정보 DTO
 public record CoinAmountResponse(
-        int coinId,
+        long coinId,
         String coinSymbol,
         String coinName,
         BigDecimal quantity,      // 코인 개수 (예: 0.005개)

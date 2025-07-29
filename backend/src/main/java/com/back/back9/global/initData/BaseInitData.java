@@ -3,6 +3,8 @@ package com.back.back9.global.initData;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
+import com.back.back9.domain.user.entity.User;
+import com.back.back9.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -29,7 +31,7 @@ public class BaseInitData {
     ApplicationRunner baseInitDataApplicationRunner() {
         return args -> {
             self.tradeLogWork();
-
+            self.UserCreate();
         };
     }
     @Transactional
@@ -84,7 +86,21 @@ public class BaseInitData {
         tradeLogService.saveAll(logs);
     }
 
+    @Transactional
+    public void UserCreate() {
+        User user = User.builder()
+                .userLoginId("admin")
+                .username("관리자")
+                .password("admin1234")
+                .role(User.UserRole.ADMIN)
+                .apiKey("admin-api-key")
+                .build();
+        userRepository.save(user);
+    }
 
+
+    @Autowired
+    private UserRepository userRepository;
 }
 
 

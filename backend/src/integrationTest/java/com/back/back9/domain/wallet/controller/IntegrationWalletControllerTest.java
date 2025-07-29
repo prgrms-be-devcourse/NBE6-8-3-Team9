@@ -1,7 +1,10 @@
 package com.back.back9.domain.wallet.controller;
 
+import com.back.back9.domain.coin.entity.Coin;
+import com.back.back9.domain.coin.repository.CoinRepository;
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.user.repository.UserRepository;
+import com.back.back9.domain.wallet.dto.BuyCoinRequest;
 import com.back.back9.domain.wallet.dto.ChargePointsRequest;
 import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.domain.wallet.repository.WalletRepository;
@@ -38,6 +41,10 @@ public class IntegrationWalletControllerTest {
 
     @Autowired
     private UserRepository userRepository; // UserRepository 추가
+
+    @Autowired
+    private CoinRepository coinRepository; // CoinRepository 추가
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -45,6 +52,7 @@ public class IntegrationWalletControllerTest {
     void setUp() {
         walletRepository.deleteAll();
         userRepository.deleteAll();
+        coinRepository.deleteAll(); // CoinRepository 초기화 추가
 
         User user = User.builder()
                 .userLoginId("testuser")
@@ -228,6 +236,367 @@ public class IntegrationWalletControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("코인 구매 통합 테스트")
+    class PurchaseItemIntegrationTest {
+
+        @Test
+        @DisplayName("성공: 유효한 구매 요청")
+        void t9() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 지갑 생성 (충분한 잔액)
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("10000.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            BuyCoinRequest request = new BuyCoinRequest(
+                    coin.getId(),           // coinId
+                    wallet.getId(),         // walletId
+                    new BigDecimal("1000.00"),  // 구매 금액
+                    new BigDecimal("0.5")       // 구매 수량
+            );
+
+            // 검증
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.userId").value(user.getId()))
+                    .andExpect(jsonPath("$.balance").value(9000.00)) // 10000 - 1000
+                    .andExpect(jsonPath("$.coinAmounts").isArray())
+                    .andExpect(jsonPath("$.coinAmounts").isNotEmpty()); // 구매 후 코인 보유
+        }
+
+        @Test
+        @DisplayName("실패: 잔액 부족")
+        void t10() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 지갑 생성 (부족한 잔액)
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("500.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            BuyCoinRequest request = new BuyCoinRequest(
+                    coin.getId(),           // coinId
+                    wallet.getId(),         // walletId
+                    new BigDecimal("1000.00"),  // 구매 금액 (잔액보다 큼)
+                    new BigDecimal("0.5")
+            );
+
+            // 검증
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        @DisplayName("실패: 존재하지 않는 코인 ID")
+        void t11() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 지갑 생성
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("10000.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            BuyCoinRequest request = new BuyCoinRequest(
+                    999L,                   // 존재하지 않는 coinId
+                    wallet.getId(),
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("0.5")
+            );
+
+            // 검증
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("실패: 다른 사용자의 지갑 접근")
+        void t12() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 다른 사용자 생성
+            User otherUser = User.builder()
+                    .userLoginId("otheruser")
+                    .username("otheruser")
+                    .password("password")
+                    .role(User.UserRole.MEMBER)
+                    .build();
+            userRepository.save(otherUser);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 다른 사용자의 지갑 생성
+            Wallet otherWallet = Wallet.builder()
+                    .user(otherUser)
+                    .address("0x987654321")
+                    .balance(new BigDecimal("10000.00"))
+                    .build();
+            walletRepository.save(otherWallet);
+
+            BuyCoinRequest request = new BuyCoinRequest(
+                    coin.getId(),
+                    otherWallet.getId(),    // 다른 사용자의 지갑 ID
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("0.5")
+            );
+
+            // 검증 - 권한이 없어야 함
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isUnauthorized()); // UNAUTHORIZED_ACCESS 에러
+        }
+    }
+
+    @Nested
+    @DisplayName("코인 판매 통합 테스트")
+    class SellItemIntegrationTest {
+
+        @Test
+        @DisplayName("성공: 유효한 판매 요청")
+        void t13() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 지갑 생성
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("5000.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            // 먼저 코인을 구매해서 보유량을 만듦
+            BuyCoinRequest buyRequest = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("2000.00"),
+                    new BigDecimal("1.0")
+            );
+
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(buyRequest)))
+                    .andExpect(status().isOk());
+
+            // 이제 판매 테스트
+            BuyCoinRequest sellRequest = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("1000.00"),  // 판매 금액
+                    new BigDecimal("0.5")       // 판매 수량
+            );
+
+            // 검증
+            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(sellRequest)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.userId").value(user.getId()))
+                    .andExpect(jsonPath("$.balance").value(4000.00)) // 3000 + 1000 (구매 후 잔액 + 판매 수익)
+                    .andExpect(jsonPath("$.coinAmounts").isArray())
+                    .andExpect(jsonPath("$.coinAmounts").isNotEmpty()); // 아직 코인 보유
+        }
+
+        @Test
+        @DisplayName("실패: 보유하지 않은 코인 판매")
+        void t14() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 지갑 생성 (코인 보유 없음)
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("10000.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            BuyCoinRequest request = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("0.5")
+            );
+
+            // 검증
+            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        @DisplayName("실패: 보유 수량보다 많은 판매")
+        void t15() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 지갑 생성
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("10000.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            // 먼저 적은 양의 코인 구매
+            BuyCoinRequest buyRequest = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("0.5")  // 0.5개 구매
+            );
+
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(buyRequest)))
+                    .andExpect(status().isOk());
+
+            // 보유량보다 많이 판매 시도
+            BuyCoinRequest sellRequest = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("2000.00"),
+                    new BigDecimal("1.0")  // 1.0개 판매 시도 (0.5개만 보유)
+            );
+
+            // 검증
+            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(sellRequest)))
+                    .andDo(print())
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        @DisplayName("성공: 연속 거래 테스트 (구매→판매→구매)")
+        void t16() throws Exception {
+            User user = userRepository.findAll().get(0);
+
+            // 테스트용 코인 생성
+            Coin coin = Coin.builder()
+                    .englishName("Bitcoin")
+                    .symbol("BTC")
+                    .build();
+            coinRepository.save(coin);
+
+            // 지갑 생성
+            Wallet wallet = Wallet.builder()
+                    .user(user)
+                    .address("0x123456789")
+                    .balance(new BigDecimal("10000.00"))
+                    .build();
+            walletRepository.save(wallet);
+
+            // 1. 첫 번째 구매
+            BuyCoinRequest buyRequest1 = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("2000.00"),
+                    new BigDecimal("1.0")
+            );
+
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(buyRequest1)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.balance").value(8000.00)); // 10000 - 2000
+
+            // 2. 판매
+            BuyCoinRequest sellRequest = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("1500.00"),
+                    new BigDecimal("0.7")
+            );
+
+            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(sellRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.balance").value(9500.00)); // 8000 + 1500
+
+            // 3. 두 번째 구매
+            BuyCoinRequest buyRequest2 = new BuyCoinRequest(
+                    coin.getId(),
+                    wallet.getId(),
+                    new BigDecimal("1000.00"),
+                    new BigDecimal("0.4")
+            );
+
+            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(buyRequest2)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.balance").value(8500.00)) // 9500 - 1000
+                    .andExpect(jsonPath("$.coinAmounts").isArray())
+                    .andExpect(jsonPath("$.coinAmounts").isNotEmpty());
         }
     }
 }

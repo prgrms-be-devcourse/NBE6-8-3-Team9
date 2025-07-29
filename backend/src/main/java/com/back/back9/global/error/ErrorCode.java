@@ -20,9 +20,11 @@ public enum ErrorCode {
     INVALID_COIN_DATA(HttpStatus.UNPROCESSABLE_ENTITY, "422-INVALID-COIN-DATA", "유효하지 않은 코인 데이터입니다. coinAmountId=%s"),
     // 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "409-DUPLICATED-EMAIL", "이미 존재하는 이메일입니다. email=%s"),
+    INSUFFICIENT_BALANCE(HttpStatus.CONFLICT,"409-INSUFFICIENT-BALANCE" ,"잔액이 부족합니다" ),
+
     // 500
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "500-INTERNAL-ERROR", "서버 내부 오류입니다."),
-    BACKUP_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "500-BACKUP-FAIL", "백업에 실패했습니다."),;
+    BACKUP_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "500-BACKUP-FAIL", "백업에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
