@@ -10,6 +10,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // Wallet 엔티티
@@ -34,7 +35,8 @@ public class Wallet extends BaseEntity {
 
 
     @OneToMany(mappedBy = "wallet", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<CoinAmount> coinAmounts;
+    @Builder.Default
+    private List<CoinAmount> coinAmounts = new ArrayList<>();
 
     @NotNull
     private String address;
@@ -50,6 +52,14 @@ public class Wallet extends BaseEntity {
     // 비즈니스 메서드
     public void charge(BigDecimal amount) {
         this.balance = this.balance.add(amount);
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void deduct(BigDecimal amount) {
+        if (this.balance.compareTo(amount) < 0) {
+            throw new IllegalArgumentException("잔액이 부족합니다.");
+        }
+        this.balance = this.balance.subtract(amount);
         this.updatedAt = OffsetDateTime.now();
     }
 }

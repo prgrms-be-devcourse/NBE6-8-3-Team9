@@ -48,10 +48,29 @@ public class CoinControllerTest {
     void setUp() {
         coinRepository.deleteAll();
 
-        coin1 = coinRepository.save(new Coin("BTC","비트코안","Bitcoin"));
-        coin2 = coinRepository.save(new Coin("ETH", "이더리움", "Ethereum"));
-        coin3 = coinRepository.save(new Coin("XRP","리플","Ripple"));
-        coin4 = coinRepository.save(new Coin("DOGE","도지코인","Dogecoin"));
+        coin1 = coinRepository.save(Coin.builder()
+                .symbol("BTC")
+                .koreanName("비트코인")
+                .englishName("Bitcoin")
+                .build());
+
+        coin2 = coinRepository.save(Coin.builder()
+                .symbol("ETH")
+                .koreanName("이더리움")
+                .englishName("Ethereum")
+                .build());
+
+        coin3 = coinRepository.save(Coin.builder()
+                .symbol("XRP")
+                .koreanName("리플")
+                .englishName("Ripple")
+                .build());
+
+        coin4 = coinRepository.save(Coin.builder()
+                .symbol("DOGE")
+                .koreanName("도지코인")
+                .englishName("Dogecoin")
+                .build());
     }
 
 

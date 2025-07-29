@@ -3,6 +3,7 @@ package com.back.back9.global.initData;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
+import com.back.back9.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -29,7 +30,6 @@ public class BaseInitData {
     ApplicationRunner baseInitDataApplicationRunner() {
         return args -> {
             self.tradeLogWork();
-
         };
     }
     @Transactional
@@ -85,6 +85,9 @@ public class BaseInitData {
     }
 
 
+
+    @Autowired
+    private UserRepository userRepository;
 }
 
 

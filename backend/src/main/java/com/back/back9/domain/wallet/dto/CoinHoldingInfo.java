@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 // 코인 보유 정보 DTO - TradeLog 서비스에서 평가수익률 계산에 사용
 public record CoinHoldingInfo(
-        int coinId,
+        long coinId,
         String coinSymbol,
         String coinName,
         BigDecimal quantity,           // 코인 개수 (예: 0.005개)

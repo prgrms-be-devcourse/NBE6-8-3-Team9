@@ -68,7 +68,6 @@ public class Rq {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-        cookie.setDomain("localhost");
         //********개발환경에선 false로 설정, 실제 서비스에서는 true로 설정 필요***********
         cookie.setSecure(false);
         cookie.setAttribute("SameSite", "Strict");
