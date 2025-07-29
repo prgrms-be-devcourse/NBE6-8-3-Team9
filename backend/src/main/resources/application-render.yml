@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate      # 스키마는 마이그레이션 도구로 관리 권장
+      ddl-auto: update      # 스키마는 마이그레이션 도구로 관리 권장
     open-in-view: false
     properties:
       hibernate:
