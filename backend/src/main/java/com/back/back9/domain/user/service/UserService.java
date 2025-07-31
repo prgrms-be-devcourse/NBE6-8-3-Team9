@@ -4,6 +4,8 @@ import com.back.back9.domain.user.dto.UserRegisterDto;
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.global.exception.ServiceException;
+import com.back.back9.domain.wallet.service.WalletService;
+import com.back.back9.domain.coin.repository.CoinRepository;
 import com.back.back9.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,17 +23,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthTokenService authTokenService;
-
+    private final WalletService walletService;
 
     public RsData<User> register(UserRegisterDto dto) {
         if (!dto.password().equals(dto.confirmPassword())) {
-            return new RsData<>("400", "비밀번호 확인이 일치하지 않습니다.");
+            return new RsData<>("400", "비밀번호가 일치하지 않습니다.");
         }
         if (userRepository.findByUserLoginId(dto.userLoginId()).isPresent()) {
             return new RsData<>("400-1", "이미 존재하는 아이디입니다.");
         }
         if (userRepository.findByUsername(dto.username()).isPresent()) {
-            return new RsData<>("400-2", "이미 존재하는 닉네임입니다.");
+            return new RsData<>("400-2", "이미 존재하는 유저이름입니다.");
         }
 
         String apiKey = UUID.randomUUID().toString();
@@ -44,20 +46,23 @@ public class UserService {
                 .apiKey(apiKey)
                 .build();
 
-        userRepository.save(user);
+        user = userRepository.save(user);
+
+        walletService.createWallet(user.getId());
+
         return new RsData<>("200-1", "회원가입이 완료되었습니다.", user);
     }
 
     public RsData<User> registerAdmin(UserRegisterDto dto) {
         if (!dto.password().equals(dto.confirmPassword())) {
-            return new RsData<>("400-0", "비밀번호 확인이 일치하지 않습니다.");
+            return new RsData<>("400-0", "비밀번호가 일치하지 않습니다.");
         }
         if (userRepository.findByUserLoginId(dto.userLoginId()).isPresent()) {
             return new RsData<>("400-1", "이미 존재하는 아이디입니다.");
         }
 
         if (userRepository.findByUsername(dto.username()).isPresent()) {
-            return new RsData<>("400-2", "이미 존재하는 닉네임입니다.");
+            return new RsData<>("400-2", "이미 존재하는 유저이름입니다.");
         }
 
         String apiKey = UUID.randomUUID().toString();
@@ -70,12 +75,22 @@ public class UserService {
                 .apiKey(apiKey)
                 .build();
 
-        userRepository.save(user);
+        user = userRepository.save(user);
+
+        walletService.createWallet(user.getId());
+
         return new RsData<>("200-1", "관리자 회원가입이 완료되었습니다.", user);
     }
 
     public Optional<User> findByUserLoginId(String userLoginId) {
         return userRepository.findByUserLoginId(userLoginId);
+    }
+
+    public void deleteByUserLoginId(String userLoginId) {
+        User user = userRepository.findByUserLoginId(userLoginId)
+                .orElseThrow(() -> new ServiceException("404", "해당 아이디의 사용자가 없습니다."));
+        walletService.deleteWalletByUserId(user.getId());
+        userRepository.delete(user);
     }
 
     public Optional<User> findByApiKey(String apiKey) {

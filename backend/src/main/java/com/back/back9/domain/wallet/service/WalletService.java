@@ -30,6 +30,31 @@ public class WalletService {
     private final CoinRepository coinRepository; // 추가된 부분
     private final UserRepository userRepository; // 사용자 정보 조회를 위한 리포지토리
 
+
+    // 사용자 지갑 생성
+    @Transactional
+    public Wallet createWallet(Long userId) {
+        // 이미 지갑이 존재하는지 확인
+        if (walletRepository.findByUserId(userId).isPresent()) {
+            throw new ErrorException(ErrorCode.WALLET_ALREADY_EXISTS, userId);
+        }
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new ErrorException(ErrorCode.USER_NOT_FOUND, userId));
+
+        // 새 지갑 생성
+        Wallet wallet = Wallet.builder()
+                .user(user)
+                .address("Wallet_address_" + userId)
+                .balance(BigDecimal.valueOf(500000000))
+                .build();
+
+        walletRepository.save(wallet);
+
+        log.info("새 지갑 생성 완료 - 사용자 ID: {}, 주소: {}", userId, wallet.getAddress());
+
+        return wallet;
+    }
+
     // 사용자 지갑 정보 조회 (모든 코인 수량 포함)
     @Transactional(readOnly = true)
     public ResponseEntity<WalletResponse> getUserWallet(Long userId) {
@@ -268,4 +293,12 @@ public class WalletService {
     public ResponseEntity<WalletResponse> sellItem(Long userId, BuyCoinRequest request) {
         return processTransaction(userId, request, TransactionType.SELL);
     }
+
+    public void deleteWalletByUserId(Long userId) {
+        walletRepository.findByUserId(userId)
+                .ifPresent(walletRepository::delete);
+    }
+
 }
+
+
