@@ -1,17 +1,16 @@
 package com.back.back9.domain.tradeLog.controller;
 
 import com.back.back9.domain.tradeLog.dto.TradeLogDto;
+import com.back.back9.domain.tradeLog.dto.TradeLogRequest;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -34,25 +33,30 @@ public class TradeLogController {
     @Transactional(readOnly = true)
     ///back9/tradeLogs?startDate=2023-10-01&endDate=2023-10-31&type=buy
     public List<TradeLogDto> getItems(
-            @PathVariable int wallet_id,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) Integer coinId,
-            @RequestParam(required = false) Integer siteId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @PathVariable("wallet_id") int walletId,
+            @ModelAttribute TradeLogRequest request,
             Pageable pageable
     ) {
-        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
-        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+        LocalDateTime startDateTime = request.startDate() != null ? request.startDate().atStartOfDay() : null;
+        LocalDateTime endDateTime = request.endDate() != null ? request.endDate().atTime(LocalTime.MAX) : null;
+
         TradeType tradeType = null;
-        if (type != null) {
+        if (request.type() != null) {
             try {
-                tradeType = TradeType.valueOf(type.toUpperCase());
+                tradeType = TradeType.valueOf(request.type().toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid trade type: " + type);
+                throw new IllegalArgumentException("Invalid trade type: " + request.type());
             }
         }
-        List<TradeLog> items = tradeLogService.findByFilter(wallet_id, tradeType, coinId, siteId, startDateTime, endDateTime, pageable);
+
+        List<TradeLog> items = tradeLogService.findByFilter(
+                walletId,
+                tradeType,
+                request.coinId(),
+                startDateTime,
+                endDateTime,
+                pageable
+        );
 
         return items.stream()
                 .map(TradeLogDto::new)

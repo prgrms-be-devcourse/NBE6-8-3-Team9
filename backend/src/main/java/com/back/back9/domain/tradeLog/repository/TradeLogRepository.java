@@ -17,16 +17,14 @@ public interface TradeLogRepository extends JpaRepository<TradeLog, Long> {
     List<TradeLog> findByWalletId(int walletId);
     Page<TradeLog> findByWalletId(int walletId, Pageable pageable);
     @Query("SELECT t FROM TradeLog t " +
-            "WHERE t.walletId = :walletId " +
+            "WHERE t.wallet.id = :walletId " +
             "AND (:type IS NULL OR t.type = :type) " +
-            "AND (:coinId IS NULL OR t.coinId = :coinId) " +
-            "AND (:siteId IS NULL OR t.exchangeId = :siteId) " +
+            "AND (:coinId IS NULL OR t.coin.id = :coinId) " +
             "AND (:startDate IS NULL OR t.createdAt >= :startDate) " +
             "AND (:endDate IS NULL OR t.createdAt <= :endDate)")
     Page<TradeLog> findByWalletIdFilter(@Param("walletId") int walletId,
                                         @Param("type") TradeType type, // ← enum으로 변경
                                         @Param("coinId") Integer  coinId,
-                                        @Param("siteId") Integer  siteId,
                                         @Param("startDate") LocalDateTime startDate,
                                         @Param("endDate") LocalDateTime endDate,
                                         Pageable pageable);

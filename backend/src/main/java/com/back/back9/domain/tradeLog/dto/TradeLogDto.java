@@ -1,28 +1,49 @@
 package com.back.back9.domain.tradeLog.dto;
 
+import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
+import com.back.back9.domain.wallet.entity.Wallet;
 
 import java.math.BigDecimal;
 
 public record TradeLogDto(
-    int id,
-    int walletId,
-    String date,
-    int coinId,
-    TradeType tradeType,
-    BigDecimal quantity, //거래 수량
-    BigDecimal price //구매한 금액
+        int id,
+        int walletId,
+        String createdAt,
+        int coinId,
+        TradeType tradeType,
+        BigDecimal quantity,
+        BigDecimal price
 ) {
-    public TradeLogDto(TradeLog tradeLog){
+    public TradeLogDto(TradeLog tradeLog) {
         this(
                 Math.toIntExact(tradeLog.getId()),
-                tradeLog.getWalletId(),
+                tradeLog.getWallet().getId().intValue(),
                 tradeLog.getCreatedAt().toLocalDate().toString(),
-                tradeLog.getCoinId(),
+                tradeLog.getCoin().getId().intValue(),
                 tradeLog.getType(),
                 tradeLog.getQuantity(),
                 tradeLog.getPrice()
         );
+    }
+
+    public static TradeLogDto from(TradeLog tradeLog) {
+        return new TradeLogDto(tradeLog);
+    }
+
+    public static TradeLog toEntity(TradeLogDto dto, Wallet wallet, Coin coin) {
+        TradeLog entity = new TradeLog();
+        entity.setWallet(wallet);
+        entity.setCoin(coin);
+        entity.setType(dto.tradeType());
+        entity.setQuantity(dto.quantity());
+        entity.setPrice(dto.price());
+
+        // createdAt은 BaseEntity에 존재 (protected)
+        // BaseEntity의 setCreatedAt(LocalDateTime) 메서드가 있으면 사용
+        // entity.setCreatedAt(LocalDateTime.parse(dto.createdAt())); // 예시
+
+        return entity;
     }
 }
