@@ -1,7 +1,16 @@
 // API 호출 공통 함수
 
+// 백엔드 에러 응답 타입 정의
+export interface ErrorResponse {
+    status: number;
+    code: string;
+    message: string;
+    timestamp?: string;
+}
+
 // API 기본 설정
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
+
 
 /**
  * 공통 API 호출 헬퍼 함수
@@ -16,6 +25,7 @@ export async function apiCall<T>(
                 'Content-Type': 'application/json',
                 ...options.headers,
             },
+            credentials: 'include', // 쿠키 자동 전송
             ...options,
         });
 
@@ -23,10 +33,34 @@ export async function apiCall<T>(
             return await response.json();
         }
 
-        console.error('API 호출 실패:', response.status, response.statusText);
-        return null;
+        // 에러 응답 처리
+        let errorData: ErrorResponse;
+        try {
+            errorData = await response.json();
+        } catch {
+            // JSON 파싱 실패 시 기본 에러 메시지
+            errorData = {
+                status: response.status,
+                code: `${response.status}-ERROR`,
+                message: response.statusText || '서버 오류가 발생했습니다.'
+            };
+        }
+
+        // 에러를 throw해서 catch 블록에서 처리할 수 있도록 함
+        const error = new Error(errorData.message) as Error & ErrorResponse;
+        error.status = errorData.status;
+        error.code = errorData.code;
+        throw error;
+
     } catch (error) {
-        console.error('API 호출 에러:', error);
+        // 네트워크 에러 등의 경우
+        if (error instanceof Error && !('status' in error)) {
+            console.error('네트워크 에러:', error);
+            const networkError = new Error('네트워크 연결을 확인해주세요.') as Error & ErrorResponse;
+            networkError.status = 0;
+            networkError.code = 'NETWORK_ERROR';
+            throw networkError;
+        }
         throw error;
     }
 }

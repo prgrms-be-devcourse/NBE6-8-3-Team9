@@ -1,5 +1,6 @@
 package com.back.back9.domain.user.entity;
 
+import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,9 @@ public class User extends BaseEntity {
 
     @Column(unique = true)
     private String apiKey;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Wallet wallet;
 
     public User(String userLoginId, String username, String password) {
         this.userLoginId = userLoginId;
