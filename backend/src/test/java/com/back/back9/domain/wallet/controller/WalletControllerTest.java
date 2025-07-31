@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -153,7 +154,7 @@ public class WalletControllerTest {
             ChargePointsRequest request = new ChargePointsRequest(chargeAmount);
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/charge", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/charge", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -181,7 +182,7 @@ public class WalletControllerTest {
             ChargePointsRequest request = new ChargePointsRequest(new BigDecimal("-100.00"));
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/charge", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/charge", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -203,7 +204,7 @@ public class WalletControllerTest {
             String requestBody = "{\"amount\": null}";
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/charge", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/charge", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andDo(print())
@@ -217,7 +218,7 @@ public class WalletControllerTest {
             ChargePointsRequest request = new ChargePointsRequest(new BigDecimal("100.00"));
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/charge", userId)
+            mockMvc.perform(put("/api/wallets/users/{userId}/charge", userId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -257,7 +258,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/purchase", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -295,7 +296,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/purchase", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -328,7 +329,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/purchase", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -362,7 +363,7 @@ public class WalletControllerTest {
             Long invalidUserId = 999L;
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", invalidUserId)
+            mockMvc.perform(put("/api/wallets/users/{userId}/purchase", invalidUserId)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -402,7 +403,7 @@ public class WalletControllerTest {
                     new BigDecimal("1.0")
             );
 
-            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/purchase", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(buyRequest)))
                     .andExpect(status().isOk());
@@ -416,7 +417,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/sell", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sellRequest)))
                     .andDo(print())
@@ -454,7 +455,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/sell", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -489,7 +490,7 @@ public class WalletControllerTest {
                     new BigDecimal("0.5")  // 0.5개 구매
             );
 
-            mockMvc.perform(post("/api/wallets/users/{userId}/purchase", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/purchase", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(buyRequest)))
                     .andExpect(status().isOk());
@@ -503,7 +504,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/sell", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(sellRequest)))
                     .andDo(print())
@@ -536,7 +537,7 @@ public class WalletControllerTest {
             );
 
             // 검증
-            mockMvc.perform(post("/api/wallets/users/{userId}/sell", user.getId())
+            mockMvc.perform(put("/api/wallets/users/{userId}/sell", user.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())

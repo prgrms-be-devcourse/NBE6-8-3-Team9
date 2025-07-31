@@ -9,13 +9,20 @@ export interface CoinAmountResponse {
 }
 
 export interface WalletDto {
-    walletId: number;      // Long 타입 (JavaScript에서는 number)
-    userId: number;        // Long 타입 (JavaScript에서는 number)
+    walletId: number;
+    userId: number;
     address: string;
-    balance: number;       // BigDecimal (JavaScript에서는 number)
+    balance: number;
     coinAmounts: CoinAmountResponse[];
 }
 
 export interface ChargeDto {
     amount: number;
+}
+
+export interface BuyCoinRequest {
+    coinId: number;
+    walletId: number;
+    amount: number;
+    quantity: number;
 }
