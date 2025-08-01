@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CoinPriceResponse } from "../../../../../websocket_test/frontend/src/types/type";
+import { CoinPriceResponse } from "@/lib/types/type";
 
 export default function ExchangePage() {
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <ExchangeContent />
+        </Suspense>
+    );
+}
+
+function ExchangeContent() {
     const [isRunning, setIsRunning] = useState(false);
     const [coin, setCoin] = useState("");
     const [price, setPrice] = useState(0);
