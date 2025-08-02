@@ -1,52 +1,41 @@
 package com.back.back9.domain.exchange.service;
 
 import com.back.back9.domain.exchange.dto.CoinPriceResponse;
-import com.back.back9.global.error.ErrorCode;
-import com.back.back9.global.error.ErrorException;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ExchangeService {
 
     private final RedisService redisService;
-    private static final Logger log = LoggerFactory.getLogger(ExchangeService.class);
-    public CoinPriceResponse getLatestCandleByScan(String symbol) {
 
-        String marketCode = CoinSymbolMapper.toMarketCode(symbol);
-        log.info("marketCode: {}", marketCode);
+    public List<JsonNode> getInitialCandles(String interval, String market) {
+        String key = market + ":" + interval;
+        return redisService.getLatestCandle(key, 170); // 프론트에서는 이 중 120개만 표시
+    }
 
-        if (marketCode == null) return null;
+    public List<JsonNode> getPreviousCandles(String interval, String market, int currentSize) {
+        return redisService.getPreviousCandles(interval, market, currentSize);
+    }
 
-        try {
-            // Redis에서 "latest:<symbol>" 키로 조회
-            String latestKey = "latest:" + marketCode;
+    public CoinPriceResponse getLatestCandleByScan(String coinSymbol) {
+        String key = coinSymbol + ":1s";
+        List<JsonNode> latestList = redisService.getLatestCandle(key, 1);
 
-            String json = redisService.getData(latestKey);
-            //180000000 손실
-            if(json == null) {
-                json = "{\"close\": 230000000}";
-            }
-
-//            if (json == null) return null;
-
-            // JSON 파싱 후 close 값 추출
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(json);
-            String close = String.valueOf(root.get("close"));
-
-            // 시간 정보는 없음 → 현재 시간 사용 가능
-            String now = LocalDateTime.now().toString();
-            return new CoinPriceResponse(marketCode, now, close);
-        } catch (Exception e) {
-            throw new ErrorException(ErrorCode.INTERNAL_ERROR, "Redis 조회 오류: " + e.getMessage());
+        if (latestList.isEmpty()) {
+            throw new RuntimeException("최신 캔들 없음: " + coinSymbol);
         }
+
+        JsonNode latest = latestList.getFirst();
+        return new CoinPriceResponse(
+                latest.path("market").asText(),
+                latest.path("candle_date_time_kst").asText(),
+                latest.path("trade_price").asText()
+        );
     }
 }

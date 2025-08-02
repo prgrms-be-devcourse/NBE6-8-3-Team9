@@ -1,70 +1,91 @@
 package com.back.back9.global.redis.service;
 
-import com.back.back9.global.error.ErrorCode;
-import com.back.back9.global.error.ErrorException;
-import com.back.back9.global.redis.dto.RedisDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RedisService {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public void initRedis() {
-        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().serverCommands();
+    public List<JsonNode> getLatestCandle(String key, int count) {
+        List<String> rawList = redisTemplate.opsForList().range(key, 0, count - 1);
+        if (rawList == null) return List.of();
+        return rawList.stream()
+                .map(str -> {
+                    try {
+                        return new ObjectMapper().readTree(str);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("JSON 파싱 실패", e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
-    public String getData(String key) {
-        return redisTemplate.opsForValue().get(key);
+
+    public List<JsonNode> getPreviousCandles(String interval, String market, int currentSize) {
+        String key = market + ":" + interval;
+        int endIndex = currentSize + 169;
+        List<String> rawList = redisTemplate.opsForList().range(key, currentSize, endIndex);
+        if (rawList == null) return List.of();
+        return rawList.stream()
+                .map(str -> {
+                    try {
+                        return new ObjectMapper().readTree(str);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("이전 JSON 파싱 실패", e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
+    public void saveCandle(String interval, String market, String candle) {
+        String key = market + ":" + interval;
+        redisTemplate.opsForList().leftPush(key, candle);
+        redisTemplate.opsForList().trim(key, 0, 999); // 최대 1000개
+    }
 
-    public void saveCandle(String rawJson) {
+    @SuppressWarnings("unused") // 현재 사용되지 않지만 보존
+    public void saveCandle(String msg) {
         try {
-            JsonNode node = objectMapper.readTree(rawJson);
-
-            String type = node.get("type").asText();
-            if (!"candle.1s".equals(type)) return;
-
-            String symbol = node.get("code").asText();
-            String kstTime = node.get("candle_date_time_kst").asText();
-
-            BigDecimal open = new BigDecimal(node.get("opening_price").asText());
-            BigDecimal high = new BigDecimal(node.get("high_price").asText());
-            BigDecimal low = new BigDecimal(node.get("low_price").asText());
-            BigDecimal close = new BigDecimal(node.get("trade_price").asText());
-            BigDecimal volume = new BigDecimal(node.get("candle_acc_trade_volume").asText());
-            long timestamp = node.get("timestamp").asLong();
-
-            String redisKeyWithTime = symbol + ":" + kstTime;
-            String latestKey = "latest:" + symbol;
-
-            // 💡 toPlainString()으로 변환 후 저장
-            RedisDTO dto = new RedisDTO(
-                    open.toPlainString(),
-                    high.toPlainString(),
-                    low.toPlainString(),
-                    close.toPlainString(),
-                    volume.toPlainString(),
-                    timestamp
-            );
-
-            String value = objectMapper.writeValueAsString(dto);
-
-            redisTemplate.opsForValue().set(redisKeyWithTime, value);
-            redisTemplate.opsForValue().set(latestKey, value);
-
+            JsonNode node = new ObjectMapper().readTree(msg);
+            String market = node.get("code").asText(); // 예: "KRW-BTC"
+            String type = node.get("type").asText();   // 예: "candle.1s"
+            String interval = type.replace("candle.", ""); // "1s"
+            saveCandle(interval, market, msg);
         } catch (Exception e) {
-            throw new ErrorException(ErrorCode.INTERNAL_ERROR, "Redis 저장 실패: " + e.getMessage());
+            throw new RuntimeException("RedisService: 실시간 캔들 저장 실패", e);
         }
+    }
+
+    public void saveCandleArray(String interval, String market, JsonNode candles) {
+        String key = market + ":" + interval;
+        List<String> candleList = new ArrayList<>();
+        for (JsonNode node : candles) {
+            candleList.add(node.toString());
+        }
+        redisTemplate.opsForList().rightPushAll(key, candleList);
+        redisTemplate.opsForList().trim(key, 0, 999);
+    }
+
+    public void clearAll() {
+        var factory = redisTemplate.getConnectionFactory();
+        Optional.ofNullable(factory)
+                .map(RedisConnectionFactory::getConnection)
+                .ifPresent(connection -> {
+                    try (connection) {
+                        connection.serverCommands().flushDb();
+                    }
+                });
     }
 }
