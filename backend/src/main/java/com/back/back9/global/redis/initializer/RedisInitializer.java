@@ -1,20 +1,23 @@
 package com.back.back9.global.redis.initializer;
 
+import com.back.back9.domain.websocket.service.UpbitRestCandleFetcher;
 import com.back.back9.global.redis.service.RedisService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RedisInitializer {
+@RequiredArgsConstructor
+public class RedisInitializer implements ApplicationRunner {
 
     private final RedisService redisService;
+    private final UpbitRestCandleFetcher candleFetcher;
 
-    public RedisInitializer(RedisService redisService) {
-        this.redisService = redisService;
-    }
-
-    public void initialize() {
-        System.out.println("Redis 초기화 시작...");
-        redisService.initRedis();
-        System.out.println("Redis 초기화 완료");
+    @Override
+    public void run(ApplicationArguments args) {
+        redisService.clearAll();
+        candleFetcher.fetchInitialOneMinute();    // ✅ 우선 1분 200개 저장
+        candleFetcher.fetchAllRemainingInOrder(); // ✅ 이후 나머지 백그라운드로 저장
     }
 }

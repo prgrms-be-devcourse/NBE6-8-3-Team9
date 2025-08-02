@@ -7,7 +7,6 @@ import {CandleData, CandlestickChartProps, ChartArea, ChartState, PriceInfo} fro
 export default function CandlestickChart({
                                              data,
                                              overlays,
-                                             timeframe,
                                              onZoomIn,
                                              onZoomOut,
                                              onReset,
@@ -100,69 +99,6 @@ export default function CandlestickChart({
         if (isInChartArea) return "chart"
         return "chart-other"
     }, [])
-
-    // Handle mouse wheel for different areas
-    const handleWheel = useCallback(
-        (event: React.WheelEvent<HTMLCanvasElement>) => {
-            const canvas = canvasRef.current
-            if (!canvas) return
-
-            const rect = canvas.getBoundingClientRect()
-            const mouseX = event.clientX - rect.left
-            const mouseY = event.clientY - rect.top
-            const area = getMouseArea(mouseX, mouseY, rect)
-
-            setCurrentArea(area)
-
-            const delta = event.deltaY < 0 ? 1.1 : 0.9
-
-            switch (area) {
-                case "x-axis":
-                    // X축 영역: 시간축 줌인/아웃
-                    event.preventDefault()
-                    event.stopPropagation()
-                    setChartState((prev) => ({
-                        ...prev,
-                        visibleCandleCount: Math.max(
-                            prev.minVisibleCandles,
-                            Math.min(prev.maxVisibleCandles, Math.round(prev.visibleCandleCount * delta)),
-                        ),
-                    }))
-                    break
-
-                case "y-axis":
-                    // Y축 영역: 가격축 줌인/아웃
-                    event.preventDefault()
-                    event.stopPropagation()
-                    setChartState((prev) => ({
-                        ...prev,
-                        priceRangeMultiplier: Math.max(0.1, Math.min(10, prev.priceRangeMultiplier * delta)),
-                    }))
-                    break
-
-                case "chart":
-                    // 그래프 영역: 시간대 조절 (과거/실시간 이동)
-                    event.preventDefault()
-                    event.stopPropagation()
-                    const timeOffset = event.deltaY > 0 ? 5 : -5
-                    setChartState((prev) => ({
-                        ...prev,
-                        offsetFromEnd: Math.max(0, Math.min(data.length - 1, prev.offsetFromEnd + timeOffset)),
-                    }))
-                    break
-
-                case "chart-other":
-                    // 차트 내부 기타 영역: 페이지 스크롤 차단하지 않음
-                    // 이벤트를 그대로 통과시켜 페이지 스크롤 허용
-                    break
-
-                default:
-                    // 차트 외부: 페이지 스크롤 허용 (이벤트를 그대로 통과)
-                    break
-            }
-        },
-        [getMouseArea, data.length],
-    )
 
     // Handle mouse down for dragging (only in chart area)
     const handleMouseDown = useCallback(
@@ -445,7 +381,6 @@ export default function CandlestickChart({
         const priceRange = (maxPrice - minPrice) * chartState.priceRangeMultiplier
         const priceCenter = (maxPrice + minPrice) / 2
         const adjustedMinPrice = priceCenter - priceRange / 2
-        const adjustedMaxPrice = priceCenter + priceRange / 2
 
         // Draw area highlights based on current mouse position (subtle)
         if (currentArea === "x-axis") {

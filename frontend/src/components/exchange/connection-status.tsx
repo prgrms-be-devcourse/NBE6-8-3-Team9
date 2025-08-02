@@ -7,7 +7,7 @@ interface ConnectionStatusProps {
     isConnected: boolean
 }
 
-export default function ConnectionStatus({ status, isConnected }: ConnectionStatusProps) {
+export default function ConnectionStatus({ status }: ConnectionStatusProps) {
     const getStatusConfig = () => {
         switch (status) {
             case "connecting":
