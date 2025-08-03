@@ -51,15 +51,7 @@ public class ExchangeBackupService {
                 // JSON -> DTO → Exchange 변환
                 ExchangeDTO dto = objectMapper.readValue(json, ExchangeDTO.class);
 
-                Exchange exchange = new Exchange();
-                exchange.setSymbol(symbol);
-                exchange.setCandleTime(candleTime);
-                exchange.setOpen(dto.getOpen());
-                exchange.setHigh(dto.getHigh());
-                exchange.setLow(dto.getLow());
-                exchange.setClose(dto.getClose());
-                exchange.setVolume(dto.getVolume());
-                exchange.setTimestamp(dto.getTimestamp());
+                Exchange exchange = getExchange(symbol, candleTime, dto);
 
                 saveList.add(exchange);
             } catch (Exception ex) {
@@ -69,5 +61,18 @@ public class ExchangeBackupService {
 
         exchangeRepository.saveAll(saveList);
         redisTemplate.delete(keys);
+    }
+
+    private static Exchange getExchange(String symbol, LocalDateTime candleTime, ExchangeDTO dto) {
+        Exchange exchange = new Exchange();
+        exchange.setSymbol(symbol);
+        exchange.setCandleTime(candleTime);
+        exchange.setOpen(String.valueOf(dto.getOpen()));
+        exchange.setHigh(String.valueOf(dto.getHigh()));
+        exchange.setLow(String.valueOf(dto.getLow()));
+        exchange.setClose(String.valueOf(dto.getClose()));
+        exchange.setVolume(String.valueOf(dto.getVolume()));
+        exchange.setTimestamp(String.valueOf(dto.getTimestamp()));
+        return exchange;
     }
 }

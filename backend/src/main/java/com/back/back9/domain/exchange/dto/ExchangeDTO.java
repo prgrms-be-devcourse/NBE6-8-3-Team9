@@ -1,26 +1,34 @@
 package com.back.back9.domain.exchange.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
+import lombok.ToString;
 
-@Data
 @Getter
-@AllArgsConstructor
+@ToString
 public class ExchangeDTO {
-    @JsonProperty("market")
-    private String symbol;
-    @JsonProperty("opening_price")
-    private String open;
-    @JsonProperty("high_price")
-    private String high;
-    @JsonProperty("low_price")
-    private String low;
-    @JsonProperty("trade_price")
-    private String close;
-    @JsonProperty("candle_acc_trade_volume")
-    private String volume;
+    private final long timestamp;
+    private final double open;
+    private final double high;
+    private final double low;
+    private final double close;
+    private final double volume;
 
-    private String timestamp;
+    @JsonCreator
+    public ExchangeDTO(
+            @JsonProperty("timestamp") long timestamp,
+            @JsonProperty("opening_price") double open,
+            @JsonProperty("high_price") double high,
+            @JsonProperty("low_price") double low,
+            @JsonProperty("trade_price") double close,
+            @JsonProperty("candle_acc_trade_volume") double volume
+    ) {
+        this.timestamp = timestamp;
+        this.open = open;
+        this.high = high;
+        this.low = low;
+        this.close = close;
+        this.volume = volume;
+    }
 }
