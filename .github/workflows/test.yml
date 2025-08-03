@@ -48,6 +48,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Generate .env file for Spring Boot
+        run: |
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+
       # Ubuntu에서는 services.redis로 자동 실행
       - name: Set up Redis on Ubuntu
         if: matrix.os == 'ubuntu-latest'
