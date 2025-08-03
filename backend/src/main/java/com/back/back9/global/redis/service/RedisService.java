@@ -19,8 +19,9 @@ public class RedisService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    public List<JsonNode> getLatestCandle(String key, int count) {
-        List<String> rawList = redisTemplate.opsForList().range(key, 0, count - 1);
+    public List<JsonNode> getLatestCandle(String interval, String symbol) {
+        String key = symbol + ":" + interval;
+        List<String> rawList = redisTemplate.opsForList().range(key, 0, 119);
         if (rawList == null) return List.of();
         return rawList.stream()
                 .map(str -> {
@@ -33,20 +34,53 @@ public class RedisService {
                 .collect(Collectors.toList());
     }
 
-    public List<JsonNode> getPreviousCandles(String interval, String market, int currentSize) {
+    public List<JsonNode> getPreviousCandlesByRange(String interval, String market, int page, String time) {
         String key = market + ":" + interval;
-        int endIndex = currentSize + 169;
-        List<String> rawList = redisTemplate.opsForList().range(key, currentSize, endIndex);
-        if (rawList == null) return List.of();
-        return rawList.stream()
+        int PAGE_SIZE = 50;
+        int SKIP_SIZE = 120 + page * PAGE_SIZE;
+
+        // 충분히 많은 데이터 가져오기 (최대 1000개까지 저장한다고 가정)
+        List<String> rawList = redisTemplate.opsForList().range(key, 0, 999);
+        if (rawList == null || rawList.isEmpty()) return List.of();
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<JsonNode> parsedList = rawList.stream()
                 .map(str -> {
                     try {
-                        return new ObjectMapper().readTree(str);
+                        return mapper.readTree(str);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException("이전 JSON 파싱 실패", e);
+                        throw new RuntimeException("JSON 파싱 실패", e);
                     }
                 })
-                .collect(Collectors.toList());
+                .toList();
+
+        // 기준 시간보다 이전(과거)의 데이터 필터링
+        List<JsonNode> filtered = parsedList.stream()
+                .filter(node -> {
+                    String nodeTime = node.path("timestamp").asText();
+                    return nodeTime.compareTo(time) < 0; // 입력시간보다 과거
+                })
+                .toList();
+
+        // 120개 넘긴 다음 페이지 사이즈만큼 반환
+        int fromIndex = Math.min(SKIP_SIZE, filtered.size());
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, filtered.size());
+
+        return filtered.subList(fromIndex, toIndex);
+    }
+
+    public JsonNode getLatest1sCandle(String coinSymbol) {
+        String key = coinSymbol + ":1s";  // 예: "KRW-BTC:1s"
+        List<String> list = redisTemplate.opsForList().range(key, 0, 0);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readTree(list.getFirst());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("실시간 1초 캔들 JSON 파싱 실패", e);
+        }
     }
 
     public void saveCandle(String interval, String market, String candle) {

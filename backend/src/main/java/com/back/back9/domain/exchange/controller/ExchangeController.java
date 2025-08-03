@@ -1,9 +1,12 @@
 package com.back.back9.domain.exchange.controller;
 
+import com.back.back9.domain.exchange.dto.ExchangeDTO;
 import com.back.back9.domain.exchange.service.ExchangeService;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -16,7 +19,7 @@ public class ExchangeController {
     private final ExchangeService exchangeService;
 
     @GetMapping("/initial")
-    public List<JsonNode> getInitialCandles(
+    public List<ExchangeDTO> getInitialCandles(
             @RequestParam String interval,
             @RequestParam String market
     ) {
@@ -24,11 +27,12 @@ public class ExchangeController {
     }
 
     @GetMapping("/previous")
-    public List<JsonNode> getPreviousCandles(
+    public List<ExchangeDTO> getPreviousCandles(
             @RequestParam String interval,
             @RequestParam String market,
-            @RequestParam int currentSize
+            @RequestParam int page,
+            @RequestParam String time
     ) {
-        return exchangeService.getPreviousCandles(interval, market, currentSize);
+        return exchangeService.getPreviousCandles(interval, market, page, time);
     }
 }
