@@ -1,5 +1,6 @@
 "use client";
 
+
 import { motion } from "framer-motion";
 import { fadeInUp, stagger } from "@/lib/motion";
 import { PageShell } from "@/components/layout/page-shell";
@@ -66,16 +67,6 @@ export function StatsStrip() {
                     viewport={{ once: true, amount: 0.2 }}
                     className="grid gap-6 md:grid-cols-3"
                 >
-                    {stats.map((s) => (
-                        <motion.div
-                            variants={fadeInUp}
-                            key={s.label}
-                            className="border rounded-lg p-6 bg-white shadow-sm transition hover:shadow-md hover:scale-[1.01]"
-                        >
-                            <div className="text-sm text-muted-foreground">{s.label}</div>
-                            <div className="mt-2 text-2xl font-semibold">{s.value}</div>
-                        </motion.div>
-                    ))}
                 </motion.div>
             </PageShell>
         </section>
