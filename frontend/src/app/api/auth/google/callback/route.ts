@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         console.log('- accessToken 쿠키 설정');
         console.log('- apiKey 쿠키 설정');
         console.log('- role 쿠키 설정');
-        console.log(`대시보드로 리다이렉트: ${baseUrl}/dashboard`);
+        console.log(`대시보드로 리다이렉트: ${baseUrl}/exchange`);
 
         return res;
     } catch (error) {
