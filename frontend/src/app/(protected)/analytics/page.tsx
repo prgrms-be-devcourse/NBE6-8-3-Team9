@@ -85,7 +85,7 @@ export default function TransactionsPage() {
             const response = await analyticsApi.getUserAnalyticsRealized(userId);
             console.log("실현 수익률 응답:", response);
             if (response) {
-                // setAnalyticsData(response);
+                setAnalyticsData(response as any);
             }
         } catch (error) {
             console.error("실현 수익률 조회 실패:", error);
