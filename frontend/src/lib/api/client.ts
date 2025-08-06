@@ -11,9 +11,7 @@ export interface ErrorResponse {
 // API 기본 설정 - 환경별 구분 (프론트/NGINX 프록시 전제)
 const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_URL ||
-    (process.env.NODE_ENV === "production" 
-        ? "https://back9-backend-latest.onrender.com" 
-        : "/api");
+    (process.env.NODE_ENV === "production" ? "/api" : "/api");
 
 // 안전한 URL 결합
 function joinUrl(base: string, endpoint: string) {
