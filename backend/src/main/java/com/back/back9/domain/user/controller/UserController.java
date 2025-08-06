@@ -8,10 +8,14 @@ import com.back.back9.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -105,11 +109,26 @@ public class UserController {
     }
 
     @DeleteMapping("/logout")
-    @Operation(summary = "로그아웃")
-    public RsData<Void> logout() {
+    @Operation(summary = "통합 로그아웃 (OAuth + JWT/쿠키)")
+    public RsData<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        // 1. OAuth 세션 사용자 처리 - SecurityContextLogoutHandler로 세션 무효화
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            // OAuth 사용자의 경우 SecurityContext 정리
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
+                    .logout(request, response, authentication);
+            log.info("OAuth 세션 사용자 로그아웃 처리 완료");
+        }
+
+        // 2. JWT/쿠키 사용자 처리 - 발급했던 동일 속성으로 쿠키 삭제
         rq.deleteCookie("apiKey");
         rq.deleteCookie("accessToken");
         rq.deleteCookie("role");
+
+        // 3. SecurityContext 명시적 클리어 (추가 보안)
+        SecurityContextHolder.clearContext();
+
+        log.info("통합 로그아웃 처리 완료");
         return new RsData<>("200-1", "로그아웃 되었습니다.");
     }
 
