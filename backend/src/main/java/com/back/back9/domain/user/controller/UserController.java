@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "UserController", description = "API 사용자 컨트롤러")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
-
+    private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final Rq rq;
 
@@ -34,6 +34,7 @@ public class UserController {
     @PostMapping("/register")
     @Operation(summary = "회원가입")
     public RsData<UserDto> register(@Valid @RequestBody UserRegisterReqBody reqBody) {
+        log.info("회원가입 요청: {}", reqBody);
         RsData<User> registerResult = userService.register(
                 new com.back.back9.domain.user.dto.UserRegisterDto(
                         reqBody.userLoginId(),
