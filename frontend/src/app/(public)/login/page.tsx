@@ -103,7 +103,7 @@ export default function LoginPage() {
 
             if (data && (data as any).result?.accessToken) {
                 console.log('로그인 성공 - 대시보드로 이동');
-                router.replace("/dashboard");
+                router.replace("/exchange");
             } else {
                 console.log('로그인 실패 - 토큰 없음:', data);
                 setError((data as any)?.message || "로그인 실패");
