@@ -84,7 +84,6 @@ public class OrdersServiceTest {
     void createOrder1() {
         OrdersRequest ordersRequest = new OrdersRequest(
                 coin1.getSymbol(),
-                coin1.getKoreanName(),
                 TradeType.BUY,
                 OrdersMethod.MARKET,
                 BigDecimal.valueOf(0.1),
@@ -114,7 +113,6 @@ public class OrdersServiceTest {
     void createOrder2() {
         OrdersRequest ordersRequest = new OrdersRequest(
                 coin1.getSymbol(),
-                coin1.getKoreanName(),
                 TradeType.BUY,
                 OrdersMethod.MARKET,
                 BigDecimal.valueOf(1),

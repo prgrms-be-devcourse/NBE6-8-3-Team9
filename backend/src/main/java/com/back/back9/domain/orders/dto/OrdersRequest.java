@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 //프론트 요청 DTO
 public record OrdersRequest(
         String coinSymbol, // 코인 심볼
-        String coinName,
         TradeType tradeType, // BUY, SELL
         OrdersMethod ordersMethod, // LIMIT, MARKET
         BigDecimal quantity, //수량
