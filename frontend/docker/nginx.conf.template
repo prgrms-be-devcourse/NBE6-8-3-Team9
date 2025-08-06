@@ -32,6 +32,9 @@ server {
         proxy_redirect         off; 
     }
 
+
+
+
     location /api/ {
            # 1) 백엔드가 뱉는 중복 CORS 헤더 삭제
            proxy_hide_header    Access-Control-Allow-Origin;
