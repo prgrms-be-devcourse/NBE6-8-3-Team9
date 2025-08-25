@@ -1,13 +1,75 @@
+
+map $http_origin $origin_allowed {
+    default   0;
+    "~^https://peuronteuendeu\.onrender\.com$" 1;
+    "~^http://localhost(:\d+)?$"               1;
+    "~^http://127\.0\.0\.1(:\d+)?$"            1;
+}
+
+map $http_referer $referer_allowed {
+    default   0;
+    "~^https://peuronteuendeu\.onrender\.com(/|$)" 1;
+    "~^http://localhost(:\d+)?(/|$)"               1;
+    "~^http://127\.0\.0\.1(:\d+)?(/|$)"            1;
+}
+
+map $request_method $is_options {
+    default   0;
+    OPTIONS   1;
+}
+
+map "$request_method:$origin_allowed" $deny_preflight {
+    default     0;
+    "OPTIONS:0" 1;
+}
+
+map $request_method $is_state_changing {
+    default 0;
+    POST    1;
+    PUT     1;
+    PATCH   1;
+    DELETE  1;
+}
+
+map $http_origin $has_origin {
+    ""      0;
+    default 1;
+}
+
+map $origin_allowed $bad_origin {
+    "0"     1;
+    default 0;
+}
+
+map $referer_allowed $bad_referer {
+    "0"     1;
+    default 0;
+}
+
+map "$is_state_changing:$has_origin:$bad_origin:$bad_referer" $deny_csrf {
+    default       0;
+    "1:1:1:0"     1;  # 상태 변경 요청, origin은 있지만 허용되지 않음
+    "1:0:0:1"     1;  # 상태 변경 요청, origin 없고 referer도 허용되지 않음
+}
+
 upstream app {
     server 127.0.0.1:${APP_PORT};
 }
 
 server {
     listen        ${PORT};
-    server_name  _;
+    server_name   _;
 
-    # Google OAuth 콜백을 프론트엔드로 처리
     location = /api/auth/google/callback {
+        if ($deny_preflight) { return 403; }
+        if ($is_options) {
+            add_header Access-Control-Allow-Origin   $http_origin always;
+            add_header Access-Control-Allow-Credentials true       always;
+            add_header Access-Control-Allow-Methods    "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers    "Authorization,Content-Type"    always;
+            return 204;
+        }
+        if ($deny_csrf) { return 403; }
         proxy_pass         http://app;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
@@ -16,8 +78,16 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
-    # OAuth2 시작 엔드포인트
     location /oauth2/ {
+        if ($deny_preflight) { return 403; }
+        if ($is_options) {
+            add_header Access-Control-Allow-Origin   $http_origin always;
+            add_header Access-Control-Allow-Credentials true       always;
+            add_header Access-Control-Allow-Methods    "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers    "Authorization,Content-Type"    always;
+            return 204;
+        }
+        if ($deny_csrf) { return 403; }
         proxy_pass             https://back9-backend-latest.onrender.com;
         proxy_http_version     1.1;
         proxy_set_header       Host                   back9-backend-latest.onrender.com;
@@ -27,61 +97,48 @@ server {
         proxy_ssl_server_name  on;
         proxy_ssl_protocols    TLSv1.2 TLSv1.3;
         proxy_ssl_ciphers      HIGH:!aNULL:!MD5;
-        proxy_read_timeout     60s;       
-        proxy_connect_timeout  5s;             
-        proxy_redirect         off; 
+        proxy_read_timeout     60s;
+        proxy_connect_timeout  5s;
+        proxy_redirect         off;
     }
 
-
-
-
     location /api/ {
-           # 1) 백엔드가 뱉는 중복 CORS 헤더 삭제
-           proxy_hide_header    Access-Control-Allow-Origin;
-           proxy_hide_header    Access-Control-Allow-Credentials;
+        proxy_hide_header    Access-Control-Allow-Origin;
+        proxy_hide_header    Access-Control-Allow-Credentials;
+        proxy_pass_header    Set-Cookie;
+        proxy_cookie_domain  back9-backend-latest.onrender.com    .peuronteuendeu.onrender.com;
+        proxy_cookie_domain  .back9-backend-latest.onrender.com   .peuronteuendeu.onrender.com;
+        proxy_cookie_flags   ~ Secure;
+        proxy_cookie_flags   ~ samesite=None;
 
-           # 2) 원본 Set-Cookie 헤더 그대로 전달
-           proxy_pass_header    Set-Cookie;
+        if ($deny_preflight) { return 403; }
+        if ($is_options) {
+            add_header Access-Control-Allow-Origin   $http_origin always;
+            add_header Access-Control-Allow-Credentials true       always;
+            add_header Access-Control-Allow-Methods    "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers    "Authorization,Content-Type"    always;
+            return 204;
+        }
+        if ($deny_csrf) { return 403; }
 
-           # 3) 쿠키 도메인 재작성
-           proxy_cookie_domain  back9-backend-latest.onrender.com    .peuronteuendeu.onrender.com;
-           proxy_cookie_domain  .back9-backend-latest.onrender.com   .peuronteuendeu.onrender.com;
+        add_header Access-Control-Allow-Origin   $http_origin always;
+        add_header Access-Control-Allow-Credentials true       always;
+        add_header Access-Control-Allow-Methods    "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers    "Authorization,Content-Type"    always;
 
-           # 4) Secure 및 SameSite=None 플래그 강제
-           #    (Nginx 1.19.3+ 에서만 동작)
-           proxy_cookie_flags   ~ Secure;
-           proxy_cookie_flags   ~ samesite=None;
-
-           # 5) Nginx 레이어에서 단일값 CORS 헤더 설정
-           add_header           Access-Control-Allow-Origin   $http_origin                 always;
-           add_header           Access-Control-Allow-Credentials  true                      always;
-           add_header           Access-Control-Allow-Methods     "GET, POST, PUT, DELETE, OPTIONS" always;
-           add_header           Access-Control-Allow-Headers     "Authorization,Content-Type"      always;
-
-           # 6) Preflight 요청 바로 응답
-           if ($request_method = OPTIONS) {
-               return 204;
-           }
-
-           # 7) 실제 백엔드로 프록시
-           proxy_pass            https://back9-backend-latest.onrender.com;
-           proxy_http_version    1.1;
-
-           # 8) 백엔드로 전달할 헤더
-           proxy_set_header      Host              back9-backend-latest.onrender.com;
-           proxy_set_header      X-Real-IP         $remote_addr;
-           proxy_set_header      X-Forwarded-For   $proxy_add_x_forwarded_for;
-           proxy_set_header      X-Forwarded-Proto $scheme;
-
-           # 9) SSL & 타임아웃 설정
-           proxy_ssl_server_name  on;
-           proxy_ssl_protocols    TLSv1.2 TLSv1.3;
-           proxy_ssl_ciphers      HIGH:!aNULL:!MD5;
-           proxy_read_timeout     60s;
-           proxy_connect_timeout  5s;
-
-           proxy_redirect         off;
-       }
+        proxy_pass            https://back9-backend-latest.onrender.com;
+        proxy_http_version    1.1;
+        proxy_set_header      Host              back9-backend-latest.onrender.com;
+        proxy_set_header      X-Real-IP         $remote_addr;
+        proxy_set_header      X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header      X-Forwarded-Proto $scheme;
+        proxy_ssl_server_name on;
+        proxy_ssl_protocols   TLSv1.2 TLSv1.3;
+        proxy_ssl_ciphers     HIGH:!aNULL:!MD5;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 5s;
+        proxy_redirect        off;
+    }
 
     location / {
         proxy_pass         http://app;
@@ -94,23 +151,20 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
-
     location /_next/static/ {
-        alias /app/.next/static/;              
+        alias /app/.next/static/;
         access_log off;
         expires 1y;
-        add_header  Cache-Control "public, max-age=31536000, immutable";
+        add_header Cache-Control "public, max-age=31536000, immutable";
     }
-
 
     location /public/ {
-        alias /app/public/;                    
+        alias /app/public/;
         access_log off;
-        expires 1h;                            
+        expires 1h;
     }
 
-
-    location = /healthz {                     
+    location = /healthz {
         return 200 'ok';
         add_header Content-Type text/plain;
     }
