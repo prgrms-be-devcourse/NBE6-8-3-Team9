@@ -4,6 +4,8 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm") version "1.9.23" // 코틀린 JVM 플러그인
+    kotlin("plugin.spring") version "1.9.23" // 코틀린 스프링 플러그인
 }
 
 group = "com.back"
@@ -12,6 +14,13 @@ version = "0.0.1-SNAPSHOT"
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// 코틀린 컴파일러 설정
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "21"
     }
 }
 
@@ -26,6 +35,11 @@ repositories {
 }
 
 dependencies {
+    // 코틀린 표준 라이브러리
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    // --- 기존 의존성 ---
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -35,7 +49,6 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
@@ -54,11 +67,21 @@ dependencies {
     implementation("org.postgresql:postgresql")
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs("src/main/java", "src/main/kotlin")
+        }
+        kotlin {
+            srcDirs("src/main/kotlin")
+        }
+    }
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-// 도메인별 태그 테스트 태스크
 val domains = listOf("user", "exchange", "trade_log", "wallet", "coin")
 domains.forEach { d ->
     tasks.register<Test>("test${d.replaceFirstChar { it.uppercase() }}") {
@@ -73,7 +96,6 @@ domains.forEach { d ->
     }
 }
 
-// 통합 테스트 소스세트 & 태스크
 sourceSets.create("integrationTest") {
     java.srcDir("src/integrationTest/java")
     resources.srcDir("src/integrationTest/resources")
@@ -92,18 +114,14 @@ tasks.register<Test>("integrationTest") {
 
 
 tasks.withType<Test>().configureEach {
-
     useJUnitPlatform()
 
-
-    // 실패 테스트만 모아 마지막에 요약 출력
     val failed = mutableListOf<Pair<TestDescriptor, TestResult>>()
     val taskName = name
 
-    // 콘솔 출력 최소화: 실패만, 표준 출력 안 찍기
     testLogging {
-        events("FAILED") // PASSED/Skipped/STDOUT 등은 끔
-        exceptionFormat = TestExceptionFormat.SHORT // FULL로 바꾸면 전체 스택
+        events("FAILED")
+        exceptionFormat = TestExceptionFormat.SHORT
         showCauses = true
         showStackTraces = true
         showStandardStreams = false
@@ -121,7 +139,6 @@ tasks.withType<Test>().configureEach {
 
         override fun afterSuite(suite: TestDescriptor, result: TestResult) {
             if (suite.parent == null) {
-                // 최상위(태스크) 요약만 출력
                 println("── $taskName summary ───────────────────────────")
                 println("Result  : ${result.resultType}")
                 println("Tests   : ${result.testCount},  Failed : ${result.failedTestCount}")
@@ -133,7 +150,6 @@ tasks.withType<Test>().configureEach {
                         val ex = r.exceptions.firstOrNull()
                         println(" - ${d.className}.${d.name}")
                         if (ex != null) {
-                            // 실패 이유만 간단히
                             println("   ${ex.javaClass.simpleName}: ${ex.message}")
                         }
                     }
