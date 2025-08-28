@@ -196,8 +196,8 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-backend-kotlin:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-backend-kotlin:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-backend-kotlinv2:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-backend-kotlinv2:latest
           cache-from: type=gha
           cache-to:   type=gha,mode=max
 
@@ -208,7 +208,7 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-frontend-kotlin:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-frontend-kotlin:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-frontend-kotlinv2:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-frontend-kotlinv2:latest
           cache-from: type=gha
           cache-to:   type=gha,mode=max
