@@ -2,6 +2,7 @@ package com.back.back9.domain.wallet.service;
 
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.repository.TradeLogRepository;
@@ -49,7 +50,7 @@ public class WalletService {
         Wallet wallet = Wallet.builder()
                 .user(user)
                 .address("Wallet_address_" + userId)
-                .balance(BigDecimal.valueOf(500000000))
+                .balance(Money.of(500_000_000L))
                 .build();
 
         walletRepository.save(wallet);
@@ -86,12 +87,14 @@ public class WalletService {
                 .orElseThrow(() -> new ErrorException(ErrorCode.WALLET_NOT_FOUND, userId));
 
         // 충전 금액 유효성 검사
-        if(request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+        Money chargeAmount = Money.of(request.amount());
+
+        if (!chargeAmount.isGreaterThanZero()) {
             throw new ErrorException(ErrorCode.INVALID_REQUEST, "충전 금액은 0보다 커야 합니다.");
         }
 
         // 지갑 잔액에 충전
-        wallet.charge(request.getAmount());
+        wallet.charge(chargeAmount);
 
         // 지갑 정보 저장
         walletRepository.save(wallet);
@@ -101,7 +104,7 @@ public class WalletService {
                 .wallet(wallet)
                 .type(TradeType.CHARGE)
                 .quantity(BigDecimal.ONE)
-                .price(request.getAmount())
+                .price(chargeAmount)
                 .build();
 
         tradeLogRepository.save(chargeLog);
@@ -183,7 +186,8 @@ public class WalletService {
             throw new ErrorException(ErrorCode.INVALID_COIN_DATA, coinAmount.getId());
         }
 
-        if (coinAmount.getTotalAmount().compareTo(BigDecimal.ZERO) < 0) {
+        if (!coinAmount.getTotalAmount().isGreaterThanZero()
+                && !coinAmount.getTotalAmount().equals(Money.zero())) {
             log.warn("CoinAmount ID {}의 총 금액이 음수입니다: {}", coinAmount.getId(), coinAmount.getTotalAmount());
             return false;
         }
@@ -218,21 +222,24 @@ public class WalletService {
             throw new ErrorException(ErrorCode.UNAUTHORIZED, "지갑에 대한 접근 권한이 없습니다.");
         }
 
+        Money txAmount = Money.of(request.amount());
+
         // 거래 금액 유효성 검사
-        if(request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (!txAmount.isGreaterThanZero()) {
             throw new ErrorException(ErrorCode.INVALID_REQUEST, "거래 금액은 0보다 커야 합니다.");
         }
+
 
         // 거래 타입에 따른 지갑 잔액 처리
         if (transactionType == TransactionType.BUY) {
             // 구매: 잔액 부족 검사 후 차감
-            if(wallet.getBalance().compareTo(request.amount()) < 0) {
+            if (!wallet.getBalance().isGreaterThanOrEqual(txAmount)) {
                 throw new ErrorException(ErrorCode.INSUFFICIENT_BALANCE, "잔액이 부족합니다.");
             }
-            wallet.deduct(request.amount());
+            wallet.deduct(txAmount);
         } else if (transactionType == TransactionType.SELL) {
             // 판매: 지갑 잔액 증가
-            wallet.charge(request.amount());
+            wallet.charge(txAmount);
         }
 
         // 지갑 정보 저장
@@ -257,7 +264,7 @@ public class WalletService {
                     .coin(coin)
                     .wallet(wallet)
                     .quantity(BigDecimal.ZERO)
-                    .totalAmount(BigDecimal.ZERO)
+                    .totalAmount(Money.of(BigDecimal.ZERO))
                     .build();
             coinAmountRepository.save(newCoinAmount);
 
@@ -273,13 +280,13 @@ public class WalletService {
         CoinAmount targetCoinAmount = validCoinAmounts.get(0);
 
         if (transactionType == TransactionType.BUY) {
-            targetCoinAmount.addQuantityAndAmount(request.quantity(), request.amount());
+            targetCoinAmount.addQuantityAndAmount(request.quantity(),txAmount);
         } else if (transactionType == TransactionType.SELL) {
             // 판매 시 보유 수량 검사
             if (targetCoinAmount.getQuantity().compareTo(request.quantity()) < 0) {
                 throw new ErrorException(ErrorCode.INSUFFICIENT_BALANCE, "보유 수량이 부족합니다.");
             }
-            targetCoinAmount.subtractQuantityAndAmount(request.quantity(), request.amount());
+            targetCoinAmount.subtractQuantityAndAmount(request.quantity(),txAmount);
         }
 
         // CoinAmount 저장 및 wallet의 coinAmounts 리스트 동기화
@@ -300,7 +307,7 @@ public class WalletService {
                 .coin(coin)
                 .type(transactionType == TransactionType.BUY ? TradeType.BUY : TradeType.SELL)
                 .quantity(request.quantity())
-                .price(request.amount())
+                .price(txAmount)
                 .build();
 
         tradeLogRepository.save(tradeLog);

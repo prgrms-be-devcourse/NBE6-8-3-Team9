@@ -1,5 +1,6 @@
 package com.back.back9.domain.wallet.dto;
 
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.wallet.entity.CoinAmount;
 import com.back.back9.domain.wallet.entity.Wallet;
 
@@ -23,7 +24,7 @@ public record WalletResponse(
                 wallet.getId(),
                 wallet.getUser().getId(),  // user.getId()로 변경
                 wallet.getAddress(),
-                wallet.getBalance(),
+                wallet.getBalance().toBigDecimal(),
                 coinAmountResponses
         );
     }
@@ -38,7 +39,7 @@ public record WalletResponse(
                 wallet.getId(),
                 wallet.getUser().getId(),  // user.getId()로 변경
                 wallet.getAddress(),
-                wallet.getBalance(),
+                wallet.getBalance().toBigDecimal(),
                 coinAmountResponses
         );
     }

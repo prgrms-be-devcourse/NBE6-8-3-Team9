@@ -1,6 +1,8 @@
 package com.back.back9.domain.wallet.entity;
 
 import com.back.back9.domain.coin.entity.Coin;
+import com.back.back9.domain.common.vo.money.Money;
+import com.back.back9.domain.common.vo.money.MoneyConverter;
 import com.back.back9.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -35,54 +37,55 @@ public class CoinAmount extends BaseEntity {
 
     @NotNull
     @Column(name = "total_amount", precision = 19, scale = 8)
-    private BigDecimal totalAmount;  // 총 투자 금액 (quantity * 평균 매수가)
+    @Convert(converter = MoneyConverter.class)
+    private Money totalAmount;// 총 투자 금액 (quantity * 평균 매수가)
 
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
     // 비즈니스 메서드
-    public void updateQuantityAndAmount(BigDecimal newQuantity, BigDecimal newTotalAmount) {
+    public void updateQuantityAndAmount(BigDecimal newQuantity, Money newTotalAmount) {
         this.quantity = newQuantity;
         this.totalAmount = newTotalAmount;
         this.updatedAt = OffsetDateTime.now();
     }
 
-    public void addQuantityAndAmount(BigDecimal additionalQuantity, BigDecimal additionalAmount) {
+    public void addQuantityAndAmount(BigDecimal additionalQuantity, Money additionalAmount) {
         this.quantity = this.quantity.add(additionalQuantity);
         this.totalAmount = this.totalAmount.add(additionalAmount);
         this.updatedAt = OffsetDateTime.now();
     }
 
-    public void subtractQuantityAndAmount(BigDecimal subtractQuantity, BigDecimal subtractAmount) {
+    public void subtractQuantityAndAmount(BigDecimal subtractQuantity, Money subtractAmount) {
         this.quantity = this.quantity.subtract(subtractQuantity);
         this.totalAmount = this.totalAmount.subtract(subtractAmount);
         this.updatedAt = OffsetDateTime.now();
     }
 
     // 평균 매수 단가 계산 (총 투자금액 / 보유 수량)
-    public BigDecimal getAverageBuyPrice() {
+    public Money getAverageBuyPrice() {
         if (quantity == null || quantity.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
+            return Money.zero();
         }
-        return totalAmount.divide(quantity, 8, java.math.RoundingMode.HALF_UP);
+        return totalAmount.divide(quantity);
     }
 
     // 기존 메서드들은 Deprecated 처리
     @Deprecated
     public void updateAmount(BigDecimal newAmount) {
-        this.totalAmount = newAmount;
+        this.totalAmount = Money.of(newAmount);
         this.updatedAt = OffsetDateTime.now();
     }
 
     @Deprecated
     public void addAmount(BigDecimal additionalAmount) {
-        this.totalAmount = this.totalAmount.add(additionalAmount);
+        this.totalAmount = this.totalAmount.add(Money.of(additionalAmount));
         this.updatedAt = OffsetDateTime.now();
     }
 
     @Deprecated
     public void subtractAmount(BigDecimal subtractAmount) {
-        this.totalAmount = this.totalAmount.subtract(subtractAmount);
+        this.totalAmount = this.totalAmount.subtract(Money.of(subtractAmount));
         this.updatedAt = OffsetDateTime.now();
     }
 }

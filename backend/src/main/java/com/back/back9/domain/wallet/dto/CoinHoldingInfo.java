@@ -19,10 +19,10 @@ public record CoinHoldingInfo(
                 coinAmount.getCoin().getId(),
                 coinAmount.getCoin().getSymbol(),
                 coinAmount.getCoin().getKoreanName() != null ?
-                    coinAmount.getCoin().getKoreanName() : coinAmount.getCoin().getSymbol(),
+                        coinAmount.getCoin().getKoreanName() : coinAmount.getCoin().getSymbol(),
                 coinAmount.getQuantity(),
-                coinAmount.getTotalAmount(),
-                coinAmount.getAverageBuyPrice()  // 엔티티에서 계산한 평균 매수가
+                coinAmount.getTotalAmount().toBigDecimal(),
+                coinAmount.getAverageBuyPrice().toBigDecimal()  // 엔티티에서 계산한 평균 매수가
         );
     }
 }

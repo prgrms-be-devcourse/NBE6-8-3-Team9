@@ -1,6 +1,7 @@
 package com.back.back9.domain.tradeLog.dto;
 
 import com.back.back9.domain.coin.entity.Coin;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.wallet.entity.Wallet;
@@ -27,7 +28,7 @@ public record TradeLogDto(
                 tradeLog.getCoin().getSymbol(),
                 tradeLog.getType(),
                 tradeLog.getQuantity(),
-                tradeLog.getPrice()
+                tradeLog.getPrice().toBigDecimal()
         );
     }
 
@@ -43,7 +44,7 @@ public record TradeLogDto(
                 coinSymbol,
                 tradeLog.getType(),
                 tradeLog.getQuantity(),
-                tradeLog.getPrice()
+                tradeLog.getPrice().toBigDecimal()
         );
     }
     public static TradeLog toEntity(TradeLogDto dto, Wallet wallet, Coin coin) {
@@ -52,7 +53,7 @@ public record TradeLogDto(
                 .coin(coin)
                 .type(dto.tradeType())
                 .quantity(dto.quantity())
-                .price(dto.price())
+                .price(Money.of(dto.price()))
                 .build();
 
     }

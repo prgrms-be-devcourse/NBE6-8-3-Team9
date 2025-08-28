@@ -1,6 +1,7 @@
 package com.back.back9.domain.log.tradeLog.service;
 
 import com.back.back9.domain.coin.entity.Coin;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
@@ -57,7 +58,7 @@ public class TradeLogServiceTest {
         wallet = walletRepository.save(Wallet.builder()
                 .user(user)
                 .address("TestAddress")
-                .balance(BigDecimal.valueOf(1_000_000L))
+                .balance(Money.of(1_000_000L))
                 .coinAmounts(new ArrayList<>())
                 .build());
 
@@ -75,7 +76,7 @@ public class TradeLogServiceTest {
                 .coin(coin)
                 .type(TradeType.BUY)
                 .quantity(new BigDecimal("0.5"))
-                .price(new BigDecimal("43000"))
+                .price(Money.of(43_000L))
                 .build();
 
         TradeLog saved = tradeLogService.save(tradeLog);

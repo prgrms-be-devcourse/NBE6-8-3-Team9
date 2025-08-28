@@ -1,5 +1,6 @@
 package com.back.back9.domain.user.controller;
 
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.user.dto.UserRegisterDto;
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.user.service.UserService;
@@ -279,7 +280,7 @@ public class UserControllerTest {
 
         assertThat(wallet).isNotNull();
         assertThat(wallet.getUser().getId()).isEqualTo(user.getId());
-        assertThat(wallet.getBalance()).isEqualTo(BigDecimal.valueOf(500000000));
+        assertThat(wallet.getBalance()).isEqualTo(Money.of(500_000_000L));
         assertThat(wallet.getAddress()).isEqualTo("Wallet_address_" + user.getId());
     }
 }
