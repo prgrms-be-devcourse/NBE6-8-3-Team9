@@ -109,7 +109,7 @@ class UserService(
     }
 
     fun getPayloadFromToken(accessToken: String): Map<String, Any> {
-        return authTokenService.payload(accessToken)
+        return authTokenService.payload(accessToken)?.filterValues { it != null } as? Map<String, Any> ?: emptyMap()
     }
 
     fun genAccessToken(user: User): String {

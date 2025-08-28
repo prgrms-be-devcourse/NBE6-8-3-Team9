@@ -1,7 +1,6 @@
 package com.back.back9.domain.user.controller
 
 import com.back.back9.domain.user.dto.UserDto
-import com.back.back9.domain.user.entity.User
 import com.back.back9.domain.user.service.UserService
 import com.back.back9.global.rq.Rq
 import com.back.back9.global.rsData.RsData
