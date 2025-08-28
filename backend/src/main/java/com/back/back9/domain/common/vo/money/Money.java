@@ -69,8 +69,7 @@ public class Money {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Money)) return false;
-        Money money = (Money) o;
+        if (!(o instanceof Money money)) return false;
         return amount.compareTo(money.amount) == 0; // 금액이 같으면 동일
     }
 
