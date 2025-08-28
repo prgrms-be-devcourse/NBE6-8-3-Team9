@@ -66,6 +66,7 @@ dependencies {
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
     
     // JWT 런타임
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
