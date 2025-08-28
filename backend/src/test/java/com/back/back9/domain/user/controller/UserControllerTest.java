@@ -66,7 +66,8 @@ public class UserControllerTest {
                 )
                 .andDo(print());
 
-        User user = userService.findByUserLoginId("testuser1").get();
+        User user = userService.findByUserLoginId("testuser1");
+        assertThat(user).isNotNull();
 
         resultActions
                 .andExpect(handler().handlerType(UserController.class))
@@ -94,7 +95,8 @@ public class UserControllerTest {
                 )
                 .andDo(print());
 
-        User user = userService.findByUserLoginId("testuser").get();
+        User user = userService.findByUserLoginId("testuser");
+        assertThat(user).isNotNull();
 
         resultActions
                 .andExpect(handler().handlerType(UserController.class))
@@ -147,7 +149,8 @@ public class UserControllerTest {
         assertThat(apiKeyCookie).isNotNull(); // Null 체크
         assertThat(accessTokenCookie).isNotNull();
 
-        User actor = userService.findByUserLoginId("testuser").get();
+        User actor = userService.findByUserLoginId("testuser");
+        assertThat(actor).isNotNull();
 
         ResultActions resultActions = mvc
                 .perform(
@@ -270,7 +273,8 @@ public class UserControllerTest {
                 .andExpect(status().isOk());
 
         // 회원 정보 조회
-        User user = userService.findByUserLoginId("walletuser").orElseThrow();
+        User user = userService.findByUserLoginId("walletuser");
+        if (user == null) throw new RuntimeException();
 
         // 지갑 정보 조회
         Wallet wallet = walletRepository.findByUserId(user.getId()).orElse(null);
