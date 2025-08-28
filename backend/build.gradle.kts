@@ -4,9 +4,9 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
-
     kotlin("jvm") version "1.9.23"
     kotlin("plugin.spring") version "1.9.23"
+    kotlin("kapt") version "1.9.23"
 }
 
 group = "com.back"
@@ -22,6 +22,16 @@ java {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = "21"
+        freeCompilerArgs = listOf("-Xjsr305=strict")
+    }
+}
+
+// KAPT 설정 (Lombok 처리용)
+kapt {
+    keepJavacAnnotationProcessors = true
+    showProcessorStats = true
+    arguments {
+        arg("lombok.addLombokGeneratedAnnotation", "true")
     }
 }
 
@@ -36,45 +46,69 @@ repositories {
 }
 
 dependencies {
-    // 코틀린 표준 라이브러리
+    // Kotlin 표준 라이브러리
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-    // --- 기존 의존성 ---
+    // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+    
+    // 기타 라이브러리
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.core:jackson-databind")
+    
+    // JWT 런타임
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // Lombok (마이그레이션 기간 동안만 유지)
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    kapt("org.projectlombok:lombok:1.18.34")
+
+    // 테스트 Lombok
+    testCompileOnly("org.projectlombok:lombok:1.18.34")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.34")
+
+    // 데이터베이스
     runtimeOnly("com.h2database:h2")
+    implementation("org.postgresql:postgresql")
+
+    // 개발 도구
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // 테스트
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.postgresql:postgresql")
 }
 
+// 소스 디렉토리 설정 (기본 Gradle 설정 사용)
 sourceSets {
     main {
         java {
-            srcDirs("src/main/java", "src/main/kotlin")
+            srcDirs("src/main/java")
         }
         kotlin {
             srcDirs("src/main/kotlin")
+        }
+    }
+    test {
+        java {
+            srcDirs("src/test/java")
+        }
+        kotlin {
+            srcDirs("src/test/kotlin")
         }
     }
 }
@@ -112,7 +146,6 @@ tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
     shouldRunAfter(tasks["test"])
 }
-
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
