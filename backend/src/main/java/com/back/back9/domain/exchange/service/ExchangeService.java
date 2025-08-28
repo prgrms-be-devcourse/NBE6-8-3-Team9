@@ -7,7 +7,6 @@ import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,12 +16,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ExchangeService {
 
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
     private final MockCoinListProvider coinListProvider;
+
+    public ExchangeService(RedisService redisService, ObjectMapper objectMapper, MockCoinListProvider coinListProvider) {
+        this.redisService = redisService;
+        this.objectMapper = objectMapper;
+        this.coinListProvider = coinListProvider;
+    }
 
     /**
      * 📌 Redis에서 초기 120개 캔들 가져오기

@@ -6,7 +6,6 @@ import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.domain.wallet.service.WalletService;
 import com.back.back9.global.exception.ServiceException;
 import com.back.back9.global.rsData.RsData;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +16,19 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthTokenService authTokenService;
     private final WalletService walletService;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthTokenService authTokenService, WalletService walletService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authTokenService = authTokenService;
+        this.walletService = walletService;
+    }
 
     private RsData<User> registerUser(UserRegisterDto dto, User.UserRole role) {
         if (!dto.password().equals(dto.confirmPassword())) {

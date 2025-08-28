@@ -5,7 +5,6 @@ import com.back.back9.global.security.SecurityUser;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -18,7 +17,6 @@ import java.time.Duration;
 import java.util.Arrays;
 
 @Component
-@RequiredArgsConstructor
 public class Rq {
 
     private final HttpServletRequest req;
@@ -36,6 +34,11 @@ public class Rq {
 
     @Value("${app.cookie.max-age-seconds:31536000}")
     private long cookieMaxAgeSeconds;
+
+    public Rq(HttpServletRequest req, HttpServletResponse resp) {
+        this.req = req;
+        this.resp = resp;
+    }
 
     /** 현재 인증된 사용자 반환(null 허용) */
     public User getActor() {

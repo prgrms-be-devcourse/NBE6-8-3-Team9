@@ -4,7 +4,6 @@ import com.back.back9.domain.websocket.service.UpbitRestCandleFetcher;
 import com.back.back9.domain.websocket.service.UpbitWebSocketConnector;
 import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -17,13 +16,18 @@ import java.util.Map;
 import static com.back.back9.domain.websocket.vo.CandleInterval.*;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class RedisInitializer {
 
     private final RedisService redisService;
     private final UpbitRestCandleFetcher fetcher;
     private final UpbitWebSocketConnector webSocketConnector;
+
+    public RedisInitializer(RedisService redisService, UpbitRestCandleFetcher fetcher, UpbitWebSocketConnector webSocketConnector) {
+        this.redisService = redisService;
+        this.fetcher = fetcher;
+        this.webSocketConnector = webSocketConnector;
+    }
 
     private static final int FETCH_BATCH_SIZE = 200;
     private static final long RATE_LIMIT_DELAY_MS = 3 * 60 * 1000; // 3분

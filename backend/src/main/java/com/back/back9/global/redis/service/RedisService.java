@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,12 +18,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RedisService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final int MAX_EXISTING_TO_CHECK = 1000;
+
+    public RedisService(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public int saveCandleArray(CandleInterval interval, String symbol, JsonNode candleArray) {
         String redisKey = interval.redisKey(symbol);

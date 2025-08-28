@@ -5,7 +5,6 @@ import com.back.back9.domain.coin.dto.CoinDto;
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.service.CoinService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/adm/coins")
 @CrossOrigin(origins = "http://localhost:3000")
 public class CoinController {
 
     private final CoinService coinService;
+
+    public CoinController(CoinService coinService) {
+        this.coinService = coinService;
+    }
 
     // 전체 코인 조회 (GET)
     @GetMapping()

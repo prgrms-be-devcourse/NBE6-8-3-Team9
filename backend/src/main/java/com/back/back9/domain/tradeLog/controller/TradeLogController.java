@@ -5,7 +5,6 @@ import com.back.back9.domain.tradeLog.dto.TradeLogRequest;
 import com.back.back9.domain.tradeLog.dto.TradeLogResponse;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +23,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/tradeLog")
-@RequiredArgsConstructor
 @Validated
 public class TradeLogController {
     private final TradeLogService tradeLogService;
     private static final Logger log = (Logger) org.slf4j.LoggerFactory.getLogger(TradeLogController.class);
+
+    public TradeLogController(TradeLogService tradeLogService) {
+        this.tradeLogService = tradeLogService;
+    }
 
     @GetMapping("/wallet/{wallet_id}")
     ///back9/tradeLogs?startDate=2023-10-01&endDate=2023-10-31&type=buy

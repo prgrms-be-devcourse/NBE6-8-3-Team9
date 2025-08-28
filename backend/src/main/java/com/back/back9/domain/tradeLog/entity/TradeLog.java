@@ -7,19 +7,11 @@ import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class TradeLog extends BaseEntity {
     //거래한 지갑
     @NotNull
@@ -52,7 +44,86 @@ public class TradeLog extends BaseEntity {
 //    @Column(nullable = false, precision = 19, scale = 8)
 //    private BigDecimal profitRate;
 
+    public TradeLog() {
+    }
+
+    public TradeLog(Wallet wallet, Coin coin, TradeType type, BigDecimal quantity, Money price) {
+        this.wallet = wallet;
+        this.coin = coin;
+        this.type = type;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+    public static TradeLogBuilder builder() {
+        return new TradeLogBuilder();
+    }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public Coin getCoin() {
+        return coin;
+    }
+
+    public TradeType getType() {
+        return type;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public Money getPrice() {
+        return price;
+    }
+
     public void setCreatedAt(LocalDateTime createdAt) {
         super.createdAt = createdAt; // BaseEntity의 protected createdAt 필드 접근
+    }
+
+    public static class TradeLogBuilder {
+        private Wallet wallet;
+        private Coin coin;
+        private TradeType type;
+        private BigDecimal quantity;
+        private Money price;
+
+        TradeLogBuilder() {
+        }
+
+        public TradeLogBuilder wallet(Wallet wallet) {
+            this.wallet = wallet;
+            return this;
+        }
+
+        public TradeLogBuilder coin(Coin coin) {
+            this.coin = coin;
+            return this;
+        }
+
+        public TradeLogBuilder type(TradeType type) {
+            this.type = type;
+            return this;
+        }
+
+        public TradeLogBuilder quantity(BigDecimal quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+
+        public TradeLogBuilder price(Money price) {
+            this.price = price;
+            return this;
+        }
+
+        public TradeLog build() {
+            return new TradeLog(wallet, coin, type, quantity, price);
+        }
+
+        public String toString() {
+            return "TradeLog.TradeLogBuilder(wallet=" + this.wallet + ", coin=" + this.coin + ", type=" + this.type + ", quantity=" + this.quantity + ", price=" + this.price + ")";
+        }
     }
 }

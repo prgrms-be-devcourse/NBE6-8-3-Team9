@@ -1,9 +1,6 @@
 package com.back.back9.global.jpa.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -15,12 +12,10 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Getter
 public abstract class BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @Setter(AccessLevel.PROTECTED)
     private Long id;
 
     @CreatedDate
@@ -30,6 +25,22 @@ public abstract class BaseEntity {
     @LastModifiedDate
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    protected void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getModifiedAt() {
+        return modifiedAt;
+    }
 
     @Override
     public boolean equals(Object o) {

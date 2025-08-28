@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,13 +24,17 @@ import java.util.function.BiConsumer;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@RequiredArgsConstructor
 @Tag(name = "UserController", description = "API 사용자 컨트롤러")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
     private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final Rq rq;
+
+    public UserController(UserService userService, Rq rq) {
+        this.userService = userService;
+        this.rq = rq;
+    }
 
     public record UserRegisterReqBody(
             @NotBlank @Size(min = 2, max = 30) String userLoginId,
