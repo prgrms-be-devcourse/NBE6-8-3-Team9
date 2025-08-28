@@ -1,6 +1,7 @@
 package com.back.back9.global.security;
 
 import com.back.back9.domain.user.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,16 +11,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class SecurityUser implements UserDetails, OAuth2User {
 
     private final User user;
 
     public SecurityUser(User user) {
         this.user = user;
-    }
-
-    public User getUser() {
-        return user;
     }
 
     @Override

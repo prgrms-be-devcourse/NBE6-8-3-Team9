@@ -9,7 +9,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,9 +29,9 @@ class CustomOAuth2UserServiceTest {
             String email = (String) attributes.get("email");
             String name = (String) attributes.get("name");
 
-            Optional<User> userOpt = userService.findByUserLoginId(email);
+            User userOpt = userService.findByUserLoginId(email);
             User user;
-            if (userOpt.isEmpty()) {
+            if (userOpt == null) {
                 user = User.builder()
                         .userLoginId(email)
                         .username(name)
@@ -42,7 +41,7 @@ class CustomOAuth2UserServiceTest {
                         .build();
                 userService.register(Mockito.any());
             } else {
-                user = userOpt.get();
+                user = userOpt;
             }
             return new SecurityUser(user);
         }
@@ -60,7 +59,7 @@ class CustomOAuth2UserServiceTest {
         );
 
         Mockito.when(userService.findByUserLoginId("testuser@example.com"))
-                .thenReturn(Optional.empty());
+                .thenReturn(null);
 
         User newUser = User.builder()
                 .userLoginId("testuser@example.com")

@@ -42,14 +42,15 @@ public class AdUserControllerTest {
 
     @BeforeAll
     void setUpAdmin() throws Exception {
-        if (userService.findByUserLoginId("admin").isEmpty()) {
+        if (userService.findByUserLoginId("admin") == null) {
             userService.register(new UserRegisterDto(
                     "admin",
                     "관리자",
                     "admin1234",
                     "admin1234"
             ));
-            User admin = userService.findByUserLoginId("admin").get();
+            User admin = userService.findByUserLoginId("admin");
+            if (admin == null) throw new RuntimeException();
             admin.setRole(User.UserRole.ADMIN);
             userService.save(admin);
         }
@@ -94,7 +95,8 @@ public class AdUserControllerTest {
     void getUserById_withAdmin() throws Exception {
         UserRegisterDto dto = new UserRegisterDto("user1", "유저1", "password", "password");
         userService.register(dto);
-        User user = userService.findByUserLoginId("user1").orElseThrow();
+        User user = userService.findByUserLoginId("user1");
+        if (user == null) throw new RuntimeException();
         Long id = user.getId();
 
         ResultActions resultActions = mvc.perform(get("/api/v1/adm/users/{id}", id)

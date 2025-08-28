@@ -56,9 +56,9 @@ public class AuthTokenServiceTest {
         idField.setAccessible(true);
         idField.set(testUser, 1L);
 
-        when(userRepository.findByUserLoginId("user1")).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUserLoginId("user1")).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(userRepository.findByApiKey(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findByApiKey(any(String.class))).thenReturn(null);
         when(userRepository.findAll()).thenReturn(java.util.List.of(testUser));
         when(userRepository.count()).thenReturn(1L);
     }
@@ -91,7 +91,8 @@ public class AuthTokenServiceTest {
     @Test
     @DisplayName("authTokenService.genAccessToken(user)")
     void t3() {
-        User user = userService.findByUserLoginId("user1").orElseThrow();
+        User user = userService.findByUserLoginId("user1");
+        if (user == null) throw new RuntimeException();
 
         String accessToken = authTokenService.genAccessToken(user);
 

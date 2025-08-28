@@ -1,10 +1,10 @@
 package com.back.back9.domain.orders.entity;
 
+import com.back.back9.global.jpa.entity.BaseEntity;
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.wallet.entity.Wallet;
-import com.back.back9.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
