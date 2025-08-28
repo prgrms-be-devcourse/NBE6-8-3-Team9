@@ -2,7 +2,6 @@ package com.back.back9.domain.analytics.controller;
 
 import com.back.back9.domain.analytics.dto.ProfitRateResponse;
 import com.back.back9.domain.analytics.service.AnalyticsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,10 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/analytics")
-@RequiredArgsConstructor
 @Validated
 public class AnalyticsController {
     private final AnalyticsService analyticsService;
+
+    public AnalyticsController(AnalyticsService analyticsService) {
+        this.analyticsService = analyticsService;
+    }
 
     @GetMapping("/wallet/{walletId}/realized")
     public ResponseEntity<ProfitRateResponse> calculateRealizedProfitRates(@PathVariable Long walletId) {

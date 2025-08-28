@@ -78,4 +78,15 @@ public class Money {
         return Objects.hash(amount); // 금액 기준으로 해시값 생성
     }
 
+    public boolean isZero() {
+        return this.amount.compareTo(BigDecimal.ZERO) == 0;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public Money divide(Money amount, int i, RoundingMode roundingMode) {
+        return new Money(this.amount.divide(amount.amount, i, roundingMode));
+    }
 }

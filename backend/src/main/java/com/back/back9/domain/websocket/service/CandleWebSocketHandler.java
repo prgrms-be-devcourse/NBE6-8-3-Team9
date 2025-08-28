@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
@@ -23,13 +22,18 @@ import java.util.Map;
 
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class CandleWebSocketHandler extends TextWebSocketHandler {
 
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
     private final MockCoinListProvider coinListProvider;
+
+    public CandleWebSocketHandler(RedisService redisService, ObjectMapper objectMapper, MockCoinListProvider coinListProvider) {
+        this.redisService = redisService;
+        this.objectMapper = objectMapper;
+        this.coinListProvider = coinListProvider;
+    }
 
     @Override
     public void afterConnectionEstablished(@NonNull WebSocketSession session) {

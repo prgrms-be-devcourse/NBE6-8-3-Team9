@@ -1,7 +1,5 @@
 package com.back.back9.domain.websocket.vo;
 
-import lombok.Getter;
-
 public enum CandleInterval {
     SEC("seconds", 1000),
     MIN_1("minutes/1", 1000),
@@ -13,7 +11,6 @@ public enum CandleInterval {
     YEAR("years", 10);
 
     private final String redisKeySuffix;
-    @Getter
     private final int maxSize;
 
     CandleInterval(String redisKeySuffix, int maxSize) {
@@ -27,6 +24,10 @@ public enum CandleInterval {
 
     public String getSuffix() {
         return redisKeySuffix;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
     }
 
     @Override

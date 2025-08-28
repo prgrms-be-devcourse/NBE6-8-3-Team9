@@ -5,7 +5,6 @@ import com.back.back9.global.error.ErrorException;
 import com.back.back9.global.problem.ProblemDetails;
 import com.back.back9.global.rsData.RsData;
 import jakarta.validation.ConstraintViolationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.Map;
 
 @RestControllerAdvice
-@RequiredArgsConstructor
 @Slf4j
 public class GlobalExceptionHandler {
 

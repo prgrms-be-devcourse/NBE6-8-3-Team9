@@ -1,9 +1,7 @@
 package com.back.back9.global.error;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-@Getter
 public enum ErrorCode {
     // 400
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "400-INVALID-REQUEST", "잘못된 요청입니다."),
@@ -37,4 +35,15 @@ public enum ErrorCode {
         this.defaultDetail = defaultDetail;
     }
 
+    public HttpStatus getStatus() {
+        return status;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getDefaultDetail() {
+        return defaultDetail;
+    }
 }

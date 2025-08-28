@@ -17,6 +17,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -31,6 +33,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @DisplayName("WalletController 테스트")
 @Tag("wallet")
+@SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
+@Sql(statements = {
+        "SET REFERENTIAL_INTEGRITY FALSE",
+        "TRUNCATE TABLE TRADE_LOG",
+        "TRUNCATE TABLE COIN_AMOUNT",
+        "TRUNCATE TABLE WALLET",
+        "TRUNCATE TABLE COIN",
+        "TRUNCATE TABLE USERS",
+        "ALTER TABLE TRADE_LOG ALTER COLUMN ID RESTART WITH 1",
+        "ALTER TABLE COIN_AMOUNT ALTER COLUMN ID RESTART WITH 1",
+        "ALTER TABLE WALLET ALTER COLUMN ID RESTART WITH 1",
+        "ALTER TABLE COIN ALTER COLUMN ID RESTART WITH 1",
+        "ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1",
+        "SET REFERENTIAL_INTEGRITY TRUE"
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public class WalletControllerTest {
 
     @Autowired

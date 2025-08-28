@@ -15,7 +15,6 @@ import com.back.back9.domain.wallet.repository.CoinAmountRepository;
 import com.back.back9.domain.wallet.repository.WalletRepository;
 import com.back.back9.global.error.ErrorCode;
 import com.back.back9.global.error.ErrorException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class WalletService {
 
@@ -34,6 +32,14 @@ public class WalletService {
     private final CoinRepository coinRepository; // 추가된 부분
     private final UserRepository userRepository; // 사용자 정보 조회를 위한 리포지토리
     private final TradeLogRepository tradeLogRepository;
+
+    public WalletService(WalletRepository walletRepository, CoinAmountRepository coinAmountRepository, CoinRepository coinRepository, UserRepository userRepository, TradeLogRepository tradeLogRepository) {
+        this.walletRepository = walletRepository;
+        this.coinAmountRepository = coinAmountRepository;
+        this.coinRepository = coinRepository;
+        this.userRepository = userRepository;
+        this.tradeLogRepository = tradeLogRepository;
+    }
 
 
     // 사용자 지갑 생성

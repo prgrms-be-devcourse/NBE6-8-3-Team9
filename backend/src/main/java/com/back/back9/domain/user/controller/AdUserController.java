@@ -9,7 +9,6 @@ import com.back.back9.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +17,15 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/api/v1/adm/users")
-@RequiredArgsConstructor
 @Tag(name = "AdUserController", description = "관리자용 사용자 API")
 @SecurityRequirement(name = "bearerAuth")
 public class AdUserController {
 
     private final UserService userService;
+
+    public AdUserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     @Operation(summary = "전체 사용자 조회")

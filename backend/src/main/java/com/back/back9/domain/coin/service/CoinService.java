@@ -4,16 +4,18 @@ import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
 import com.back.back9.global.error.ErrorCode;
 import com.back.back9.global.error.ErrorException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class CoinService {
     private final CoinRepository coinRepository;
+
+    public CoinService(CoinRepository coinRepository) {
+        this.coinRepository = coinRepository;
+    }
 
     // 코인 전체 조회
     public List<Coin> findAll() {

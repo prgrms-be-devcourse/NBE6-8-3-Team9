@@ -1,16 +1,19 @@
 package com.back.back9.domain.websocket.service;
 
 import com.back.back9.domain.websocket.vo.CandleInterval;
-import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class RestCandleScheduler {
 
     private final FallbackRegistry fallbackRegistry;
     private final UpbitRestCandleFetcher restFetcher;
+
+    public RestCandleScheduler(FallbackRegistry fallbackRegistry, UpbitRestCandleFetcher restFetcher) {
+        this.fallbackRegistry = fallbackRegistry;
+        this.restFetcher = restFetcher;
+    }
 
     @Scheduled(fixedRate = 60_000)
     public void fetchFallbackCandles() {

@@ -1,15 +1,18 @@
 package com.back.back9.domain.websocket.service;
 
 import com.back.back9.domain.websocket.vo.CandleInterval;
-import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class UpbitRestScheduler {
 
     private final UpbitRestCandleFetcher restFetcher;
+
+    public UpbitRestScheduler(UpbitRestCandleFetcher restFetcher) {
+        this.restFetcher = restFetcher;
+    }
+
     //매 10분마다 스케쥴이 활성화 되어있는지 로그로 체크
     @Scheduled(fixedRate = 600_000)
     public void checkScheduler() {

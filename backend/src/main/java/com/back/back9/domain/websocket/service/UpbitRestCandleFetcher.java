@@ -5,7 +5,6 @@ import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,7 +12,6 @@ import java.util.List;
 
 
 @Service
-@RequiredArgsConstructor
 public class UpbitRestCandleFetcher {
 
     private final RedisService redisService;
@@ -21,6 +19,11 @@ public class UpbitRestCandleFetcher {
     private final RestTemplate rest = new RestTemplate();
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final int MAX_PER_REQUEST = 200;
+
+    public UpbitRestCandleFetcher(RedisService redisService, MockCoinListProvider coinListProvider) {
+        this.redisService = redisService;
+        this.coinListProvider = coinListProvider;
+    }
 
     public int fetchInterval(CandleInterval interval, int count) {
         List<String> markets = coinListProvider.getMarketCodes();

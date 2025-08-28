@@ -1,7 +1,6 @@
 package com.back.back9.global.security;
 
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,12 +17,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomAuthenticationFilter customAuthenticationFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+
+    public SecurityConfig(CustomAuthenticationFilter customAuthenticationFilter, OAuth2SuccessHandler oAuth2SuccessHandler, HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository) {
+        this.customAuthenticationFilter = customAuthenticationFilter;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.cookieAuthorizationRequestRepository = cookieAuthorizationRequestRepository;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -105,3 +109,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+

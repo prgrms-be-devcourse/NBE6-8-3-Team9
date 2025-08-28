@@ -2,7 +2,6 @@ package com.back.back9.global.security;
 
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.user.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -10,9 +9,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
-    private final @Lazy UserService userService;
+    private final UserService userService;
+
+    public CustomOAuth2UserService(@Lazy UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {

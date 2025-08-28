@@ -4,15 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
-@ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExchangeDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -24,7 +19,6 @@ public class ExchangeDTO {
     private final BigDecimal low;
     private final BigDecimal close;
     private final double volume;
-    @Setter
     private String name;
 
     @JsonCreator
@@ -46,5 +40,60 @@ public class ExchangeDTO {
         this.low = low;
         this.close = close;
         this.volume = volume;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public LocalDateTime getTime() {
+        return time;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public BigDecimal getOpen() {
+        return open;
+    }
+
+    public BigDecimal getHigh() {
+        return high;
+    }
+
+    public BigDecimal getLow() {
+        return low;
+    }
+
+    public BigDecimal getClose() {
+        return close;
+    }
+
+    public double getVolume() {
+        return volume;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "ExchangeDTO{" +
+                "timestamp=" + timestamp +
+                ", time=" + time +
+                ", symbol='" + symbol + "'" +
+                ", open=" + open +
+                ", high=" + high +
+                ", low=" + low +
+                ", close=" + close +
+                ", volume=" + volume +
+                ", name='" + name + "'" +
+                '}';
     }
 }

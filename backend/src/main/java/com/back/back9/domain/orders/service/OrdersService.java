@@ -17,7 +17,6 @@ import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.domain.wallet.repository.WalletRepository;
 import com.back.back9.domain.wallet.service.WalletService;
 import com.back.back9.global.error.ErrorException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,13 +27,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OrdersService {
     private final OrdersRepository ordersRepository;
     private final CoinRepository coinRepository;
     private final WalletRepository walletRepository;
     private final WalletService walletService;
+
+    public OrdersService(OrdersRepository ordersRepository, CoinRepository coinRepository, WalletRepository walletRepository, WalletService walletService) {
+        this.ordersRepository = ordersRepository;
+        this.coinRepository = coinRepository;
+        this.walletRepository = walletRepository;
+        this.walletService = walletService;
+    }
+
     @Transactional
     public List<OrderResponse> getOrdersByWalletId(Long walletId) {
         List<Orders> orders = ordersRepository.findByWalletId(walletId);

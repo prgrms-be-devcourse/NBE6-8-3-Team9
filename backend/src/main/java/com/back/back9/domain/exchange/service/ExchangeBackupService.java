@@ -6,7 +6,6 @@ import com.back.back9.domain.exchange.repository.ExchangeRepository;
 import com.back.back9.global.error.ErrorCode;
 import com.back.back9.global.error.ErrorException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +16,17 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 public class ExchangeBackupService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
     private final ExchangeRepository exchangeRepository;
+
+    public ExchangeBackupService(RedisTemplate<String, String> redisTemplate, ObjectMapper objectMapper, ExchangeRepository exchangeRepository) {
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.exchangeRepository = exchangeRepository;
+    }
 
     public void backupPreviousDayRedisToDB() {
         // 전날 날짜

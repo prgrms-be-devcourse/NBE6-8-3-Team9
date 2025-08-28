@@ -4,7 +4,6 @@ import com.back.back9.domain.coin.repository.CoinRepository;
 import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.domain.wallet.repository.CoinAmountRepository;
 import com.back.back9.domain.wallet.repository.WalletRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
 @Configuration
-@RequiredArgsConstructor
 public class BaseInitData {
     @Autowired
     @Lazy

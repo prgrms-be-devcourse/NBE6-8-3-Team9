@@ -4,18 +4,20 @@ import com.back.back9.domain.exchange.dto.ExchangeDTO;
 import com.back.back9.domain.exchange.dto.InitialRequestDTO;
 import com.back.back9.domain.exchange.dto.PreviousDTO;
 import com.back.back9.domain.exchange.service.ExchangeService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/exchange")
 public class ExchangeController {
 
     private final ExchangeService exchangeService;
+
+    public ExchangeController(ExchangeService exchangeService) {
+        this.exchangeService = exchangeService;
+    }
 
     @PostMapping("/initial")
     public List<ExchangeDTO> getInitialCandles(@RequestBody InitialRequestDTO request) {

@@ -6,7 +6,6 @@ import com.back.back9.domain.common.vo.money.MoneyConverter;
 import com.back.back9.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -14,10 +13,6 @@ import java.time.OffsetDateTime;
 // CoinAmount 엔티티
 // 코인 수량 및 정보
 @Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 @Table(name = "coin_amount")
 public class CoinAmount extends BaseEntity {
 
@@ -42,6 +37,41 @@ public class CoinAmount extends BaseEntity {
 
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    protected CoinAmount() {
+    }
+
+    public CoinAmount(Wallet wallet, Coin coin, BigDecimal quantity, Money totalAmount, OffsetDateTime updatedAt) {
+        this.wallet = wallet;
+        this.coin = coin;
+        this.quantity = quantity;
+        this.totalAmount = totalAmount;
+        this.updatedAt = updatedAt;
+    }
+
+    public static CoinAmountBuilder builder() {
+        return new CoinAmountBuilder();
+    }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public Coin getCoin() {
+        return coin;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public Money getTotalAmount() {
+        return totalAmount;
+    }
+
+    public OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 
     // 비즈니스 메서드
     public void updateQuantityAndAmount(BigDecimal newQuantity, Money newTotalAmount) {
@@ -87,5 +117,49 @@ public class CoinAmount extends BaseEntity {
     public void subtractAmount(BigDecimal subtractAmount) {
         this.totalAmount = this.totalAmount.subtract(Money.of(subtractAmount));
         this.updatedAt = OffsetDateTime.now();
+    }
+
+    public static class CoinAmountBuilder {
+        private Wallet wallet;
+        private Coin coin;
+        private BigDecimal quantity;
+        private Money totalAmount;
+        private OffsetDateTime updatedAt;
+
+        CoinAmountBuilder() {
+        }
+
+        public CoinAmountBuilder wallet(Wallet wallet) {
+            this.wallet = wallet;
+            return this;
+        }
+
+        public CoinAmountBuilder coin(Coin coin) {
+            this.coin = coin;
+            return this;
+        }
+
+        public CoinAmountBuilder quantity(BigDecimal quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+
+        public CoinAmountBuilder totalAmount(Money totalAmount) {
+            this.totalAmount = totalAmount;
+            return this;
+        }
+
+        public CoinAmountBuilder updatedAt(OffsetDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        public CoinAmount build() {
+            return new CoinAmount(wallet, coin, quantity, totalAmount, updatedAt);
+        }
+
+        public String toString() {
+            return "CoinAmount.CoinAmountBuilder(wallet=" + this.wallet + ", coin=" + this.coin + ", quantity=" + this.quantity + ", totalAmount=" + this.totalAmount + ", updatedAt=" + this.updatedAt + ")";
+        }
     }
 }

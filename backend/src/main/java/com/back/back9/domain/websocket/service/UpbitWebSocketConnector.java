@@ -1,6 +1,5 @@
 package com.back.back9.domain.websocket.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
@@ -9,11 +8,14 @@ import org.springframework.web.socket.client.WebSocketConnectionManager;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class UpbitWebSocketConnector implements DisposableBean {
 
     private final CandleWebSocketHandler candleWebSocketHandler;
+
+    public UpbitWebSocketConnector(CandleWebSocketHandler candleWebSocketHandler) {
+        this.candleWebSocketHandler = candleWebSocketHandler;
+    }
 
     public void connect() {
         WebSocketClient client = new StandardWebSocketClient();
