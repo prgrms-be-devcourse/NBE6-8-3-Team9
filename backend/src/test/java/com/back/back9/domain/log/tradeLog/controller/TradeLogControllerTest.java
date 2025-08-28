@@ -2,6 +2,7 @@ package com.back.back9.domain.log.tradeLog.controller;
 
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.tradeLog.controller.TradeLogController;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
@@ -40,8 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class TradeLogControllerTest {
     @Autowired
-    private TradeLogController tradeLogController;
-    @Autowired
     private TradeLogService tradeLogService;
     @Autowired
     private TradeLogRepository tradeLogRepository;
@@ -71,11 +70,32 @@ public class TradeLogControllerTest {
         User user2 = userRepository.save(User.builder().userLoginId("u2").username("user2").password("1234").role(User.UserRole.MEMBER).build());
         User user3 = userRepository.save(User.builder().userLoginId("u3").username("user3").password("1234").role(User.UserRole.MEMBER).build());
 
-        // 지갑 3개 생성
-        wallet1 = walletRepository.save(Wallet.builder().user(user1).address("addr1").balance(BigDecimal.valueOf(1000000)).coinAmounts(new ArrayList<>()).build());
-        wallet2 = walletRepository.save(Wallet.builder().user(user2).address("addr2").balance(BigDecimal.valueOf(1000000)).coinAmounts(new ArrayList<>()).build());
-        wallet3 = walletRepository.save(Wallet.builder().user(user3).address("addr3").balance(BigDecimal.valueOf(1000000)).coinAmounts(new ArrayList<>()).build());
+        wallet1 = walletRepository.save(
+                Wallet.builder()
+                        .user(user1)
+                        .address("addr1")
+                        .balance(Money.of(1_000_000L))
+                        .coinAmounts(new ArrayList<>())
+                        .build()
+        );
 
+        wallet2 = walletRepository.save(
+                Wallet.builder()
+                        .user(user2)
+                        .address("addr2")
+                        .balance(Money.of(1_000_000L))
+                        .coinAmounts(new ArrayList<>())
+                        .build()
+        );
+
+        wallet3 = walletRepository.save(
+                Wallet.builder()
+                        .user(user3)
+                        .address("addr3")
+                        .balance(Money.of(1_000_000L))
+                        .coinAmounts(new ArrayList<>())
+                        .build()
+        );
         // 코인 3개 생성
         coin1 = coinRepository.save(Coin.builder().symbol("KRW-BTC3").koreanName("비트코인3").englishName("Bitcoin3").build());
         coin2 = coinRepository.save(Coin.builder().symbol("KRW-ETH3").koreanName("이더리움3").englishName("Ethereum3").build());
@@ -93,8 +113,7 @@ public class TradeLogControllerTest {
         for (int i = 1; i <= 15; i++) {
             TradeType type = (i % 3 == 0) ? TradeType.SELL : TradeType.BUY;
             Coin coin = (i <= 5) ? coin1 : (i <= 10) ? coin2 : coin3;
-            BigDecimal price = BigDecimal.valueOf(1000 + (i * 1000));
-
+            Money price = Money.of(1000 + (i * 1000));
             TradeLog log = TradeLog.builder()
                     .wallet(wallet1)
                     .coin(coin)

@@ -2,6 +2,7 @@ package com.back.back9.domain.tradeLog.service;
 
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.tradeLog.dto.TradeLogDto;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
@@ -19,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -42,17 +42,12 @@ public class TradeLogService {
     public List<TradeLog> findAll() {
         return tradeLogRepository.findAll();
     }
-    @Transactional(readOnly = true)
-    public Optional<TradeLog> findLatest() {
-        return tradeLogRepository.findFirstByOrderByIdDesc();
-    }
-
 
     @Transactional(readOnly = true)
-    public List<TradeLogDto> findByWalletId(Long userId) {
-        // 1. userId로 wallet 조회
-        Wallet wallet = walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자 ID " + userId + "의 지갑을 찾을 수 없습니다."));
+    public List<TradeLogDto> findByWalletId(Long walletId) {
+        //1. walletId로 사용자Id 조회
+        Wallet wallet = walletRepository.findByUserId(walletId)
+                .orElseThrow(() -> new EntityNotFoundException("지갑ID인" + walletId + "의 사용자를 찾을 수 없습니다."));
 
         if (wallet != null) {
             log.info("wallet: {}", wallet.getId());
@@ -60,7 +55,7 @@ public class TradeLogService {
         }
 
         // 2. walletId로 TradeLog 조회
-        return tradeLogRepository.findByWalletId(wallet.getId())  // ✅ 여기를 수정
+        return tradeLogRepository.findByWalletId(wallet.getId())
                 .stream()
                 .map(TradeLogDto::from)
                 .collect(Collectors.toList());
@@ -111,10 +106,10 @@ public class TradeLogService {
     }
     @Transactional
     public TradeLogDto save(TradeLogDto tradeLogDto) {
-        Wallet wallet = walletRepository.findById((long) tradeLogDto.walletId())
+        Wallet wallet = walletRepository.findById(tradeLogDto.walletId())
                 .orElseThrow(() -> new EntityNotFoundException("Wallet not found"));
 
-        Coin coin = coinRepository.findById((long) tradeLogDto.coinId())
+        Coin coin = coinRepository.findById(tradeLogDto.coinId())
                 .orElseThrow(() -> new EntityNotFoundException("Coin not found"));
 
         TradeLog tradeLog = TradeLogDto.toEntity(tradeLogDto, wallet, coin);
@@ -169,7 +164,7 @@ public class TradeLogService {
                     .coin(coin)
                     .type(type)
                     .quantity(BigDecimal.valueOf(1))
-                    .price(BigDecimal.valueOf(100_000_000L + (i * 10_000_000L)))
+                    .price(Money.of(100_000_000L + (i * 10_000_000L)))
                     .build();
             log.setCreatedAt(baseDate.plusDays((i - 1) * 7));
             logs.add(log);
@@ -178,5 +173,4 @@ public class TradeLogService {
         saveAll(logs);
 
     }
-
 }

@@ -20,7 +20,7 @@ public record CoinAmountResponse(
                 coin.getSymbol(),
                 coin.getKoreanName() != null ? coin.getKoreanName() : coin.getSymbol(),
                 coinAmount.getQuantity(),
-                coinAmount.getTotalAmount()
+                coinAmount.getTotalAmount().toBigDecimal()
         );
     }
 }

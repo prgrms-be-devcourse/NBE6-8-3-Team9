@@ -3,6 +3,7 @@ package com.back.back9.domain.analytics.service;
 import com.back.back9.domain.analytics.dto.ProfitAnalysisDto;
 import com.back.back9.domain.analytics.dto.ProfitRateResponse;
 import com.back.back9.domain.coin.service.CoinService;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.exchange.dto.CoinPriceResponse;
 import com.back.back9.domain.exchange.service.ExchangeService;
 import com.back.back9.domain.tradeLog.dto.TradeLogDto;
@@ -63,7 +64,7 @@ public class AnalyticsService {
         // 지갑에 해당하는 모든 트레이드 로그 조회 (매수, 매도, 충전 포함)
         List<TradeLogDto> tradeLogs = tradeLogService.findByWalletId(walletId);
         if (tradeLogs.isEmpty()) {
-            log.info("비어있음" + walletId);
+            log.debug("비어있음" + walletId);
         } else {
             for (TradeLogDto tradeLog : tradeLogs) {
                 log.info(String.valueOf(tradeLog.coinId()));
@@ -73,37 +74,37 @@ public class AnalyticsService {
 
         // 코인별로 트레이드 로그 그룹핑
         Map<Long, List<TradeLogDto>> tradeLogsByCoin = tradeLogs.stream()
+                .filter(log -> log.coinId() != null && log.coinId() > 0)
                 .collect(Collectors.groupingBy(TradeLogDto::coinId));
 
         List<ProfitAnalysisDto> coinAnalytics = new ArrayList<>();
 
         // 충전(CHARGE) 로그만 추출하여 총 투자금 계산 (단순 가격 합산)
-        List<TradeLogDto> walletLogs = tradeLogService.findByWalletIdAndTypeCharge(walletId);
+        List<TradeLogDto> walletLogsTypeCharge = tradeLogService.findByWalletIdAndTypeCharge(walletId);
 
-        BigDecimal baseInvestment = new BigDecimal(500_000_000L); // 초기 투자금 (예: 5억 원)
-        BigDecimal walletLogSum = walletLogs.stream()
-                .map(TradeLogDto::price)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalInvested = baseInvestment.add(walletLogSum);
+        Money baseInvestment = Money.of(500_000_000L); // 초기 투자금 (예: 5억 원)
+        Money walletLogChargeSum = walletLogsTypeCharge.stream()
+                .map(log -> Money.of(log.price()))   // 각 로그 금액을 Money로 변환
+                .reduce(Money.zero(), Money::add);
+        Money totalInvested = baseInvestment.add(walletLogChargeSum);
 
-        // 전체 매도금액 및 전체 실현 원가 누적용
-        BigDecimal totalSellAmountSum = BigDecimal.ZERO;
-        BigDecimal totalRealizedCostSum = BigDecimal.ZERO;
+        Money totalSellAmountSum = Money.zero(); // 전체 매도금액 누적
+        Money totalRealizedCostSum = Money.zero(); // 전체 실현 원가 누적
 
-        // 코인별 수익률 계산
         for (Map.Entry<Long, List<TradeLogDto>> entry : tradeLogsByCoin.entrySet()) {
             Long coinId = entry.getKey();
-            String coinName= String.valueOf(coinId);
+            String coinName = String.valueOf(coinId);
             List<TradeLogDto> logs = entry.getValue();
 
-            BigDecimal totalBuyQuantity = BigDecimal.ZERO;
-            BigDecimal totalBuyAmount = BigDecimal.ZERO;
-            BigDecimal totalSellQuantity = BigDecimal.ZERO;
-            BigDecimal totalSellAmount = BigDecimal.ZERO;
+            BigDecimal totalBuyQuantity = BigDecimal.ZERO;   // 매수 수량 (코인 개수)
+            Money totalBuyAmount = Money.zero();             // 매수 총 금액
+            BigDecimal totalSellQuantity = BigDecimal.ZERO;  // 매도 수량
+            Money totalSellAmount = Money.zero();            // 매도 총 금액
 
             // 매수/매도 금액 및 수량 계산
             for (TradeLogDto log : logs) {
-                BigDecimal tradeAmount = log.price().multiply(log.quantity());
+                // 거래 금액 = 가격 × 수량
+                Money tradeAmount = Money.of(log.price()).multiply(log.quantity());
 
                 if (log.tradeType() == TradeType.BUY) {
                     totalBuyQuantity = totalBuyQuantity.add(log.quantity());
@@ -114,20 +115,22 @@ public class AnalyticsService {
                 }
             }
 
-            // 평균 매수가 = 매수 총금액 / 매수 총수량
-            BigDecimal averageBuyPrice = totalBuyQuantity.compareTo(BigDecimal.ZERO) > 0
-                    ? totalBuyAmount.divide(totalBuyQuantity, 8, RoundingMode.DOWN)
-                    : BigDecimal.ZERO;
+            // 평균 매수가 = 총 매수 금액 ÷ 총 매수 수량
+            Money averageBuyPrice = totalBuyQuantity.compareTo(BigDecimal.ZERO) > 0
+                    ? totalBuyAmount.divide(totalBuyQuantity)
+                    : Money.zero();
 
-            // 실현 원가 = 평균 매수가 * 매도 수량
-            BigDecimal realizedCost = averageBuyPrice.multiply(totalSellQuantity);
+            // 실현 원가 = 평균 매수가 × 매도 수량
+            Money realizedCost = averageBuyPrice.multiply(totalSellQuantity);
 
-            // 실현 수익 = 매도 총금액 - 실현 원가
-            BigDecimal realizedProfit = totalSellAmount.subtract(realizedCost);
+            // 실현 수익 = 매도 총 금액 - 실현 원가
+            Money realizedProfit = totalSellAmount.subtract(realizedCost);
 
-            // 실현 수익률 = 실현 수익 / 실현 원가 × 100
-            BigDecimal realizedProfitRate = realizedCost.compareTo(BigDecimal.ZERO) > 0
-                    ? realizedProfit.divide(realizedCost, 8, RoundingMode.DOWN).multiply(BigDecimal.valueOf(100))
+            // 실현 수익률 = (실현 수익 ÷ 실현 원가) × 100
+            BigDecimal realizedProfitRate = realizedCost.isGreaterThanZero()
+                    ? realizedProfit.toBigDecimal()
+                    .divide(realizedCost.toBigDecimal(), 8, RoundingMode.DOWN)
+                    .multiply(BigDecimal.valueOf(100))
                     : BigDecimal.ZERO;
 
             // 전체 수익 계산을 위한 누적
@@ -137,18 +140,21 @@ public class AnalyticsService {
             // 현재 보유 수량 = 총 매수 수량 - 총 매도 수량
             BigDecimal currentHolding = totalBuyQuantity.subtract(totalSellQuantity);
 
+            // DTO에 값 추가 (averageBuyPrice와 profitRate는 그대로 사용)
             coinAnalytics.add(new ProfitAnalysisDto(
                     coinName,
                     currentHolding,
-                    averageBuyPrice,
+                    averageBuyPrice.toBigDecimal(),   // DTO가 BigDecimal 받는 경우
                     realizedProfitRate
             ));
         }
 
+
         // 전체 실현 수익률 = (전체 매도금액 - 전체 실현 원가) / 총 투자금 × 100
-        BigDecimal realizedProfitRateTotal = totalInvested.compareTo(BigDecimal.ZERO) > 0
+        BigDecimal realizedProfitRateTotal = totalInvested.isGreaterThanZero()
                 ? totalSellAmountSum.subtract(totalRealizedCostSum)
-                .divide(totalInvested, 8, RoundingMode.DOWN)
+                .toBigDecimal()
+                .divide(totalInvested.toBigDecimal(), 8, RoundingMode.DOWN)
                 .multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 
@@ -156,7 +162,7 @@ public class AnalyticsService {
                 walletId,
                 coinAnalytics,
                 realizedProfitRateTotal,     // 전체 실현 수익률
-                realizedProfitRateTotal            // 평가 수익률은 이 메서드에서는 계산하지 않음
+                realizedProfitRateTotal      // 평가 수익률은 이 메서드에서는 계산하지 않음
         );
     }
     /*
@@ -178,24 +184,25 @@ public class AnalyticsService {
 
         List<ProfitAnalysisDto> coinAnalytics = new ArrayList<>();
 
-        BigDecimal totalInvestedAmount = BigDecimal.ZERO;      // 총 투자 원금 (코인별 매수가 * 수량)
-        BigDecimal totalEvaluationAmount = BigDecimal.ZERO;    // 총 평가 금액 (현재가 * 수량)
+        Money totalInvestedAmount = Money.zero();      // 총 투자 원금 (코인별 매수가 * 수량)
+        Money totalEvaluationAmount = Money.zero();    // 총 평가 금액 (현재가 *
 
         for (CoinHoldingInfo info : coinHoldingInfos) {
             // 최신 시세 정보 조회
             CoinPriceResponse coinPriceResponse = exchangeService.getLatestCandleByScan(info.coinName());
 
             BigDecimal quantity = info.quantity();               // 현재 보유 수량
-            BigDecimal avgBuyPrice = info.averageBuyPrice();     // 평균 매수가
-            BigDecimal currentPrice = coinPriceResponse.getPrice(); // 현재가
+            Money avgBuyPrice = Money.of(info.averageBuyPrice());    // 평균 매수가
+            Money currentPrice = Money.of(coinPriceResponse.getPrice()); // 현재가
 
             log.info("코인: {}, 현재가: {}, 수량: {}, 평균단가: {}",
                     info.coinName(), currentPrice, quantity, avgBuyPrice);
 
             // 수익률 = (현재가 - 평균단가) / 평균단가 * 100
-            BigDecimal profitRate = avgBuyPrice.compareTo(BigDecimal.ZERO) > 0
+            BigDecimal profitRate = avgBuyPrice.isGreaterThanZero()
                     ? currentPrice.subtract(avgBuyPrice)
-                    .divide(avgBuyPrice, 8, RoundingMode.HALF_UP)
+                    .toBigDecimal()
+                    .divide(avgBuyPrice.toBigDecimal(), 8, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100))
                     : BigDecimal.ZERO;
 
@@ -203,7 +210,7 @@ public class AnalyticsService {
             coinAnalytics.add(new ProfitAnalysisDto(
                     String.valueOf(info.coinId()),
                     quantity,
-                    avgBuyPrice,
+                    avgBuyPrice.toBigDecimal(),   // DTO는 BigDecimal 유지
                     profitRate
             ));
 
@@ -215,27 +222,29 @@ public class AnalyticsService {
         }
 
         // 코인 투자 수익률 = (총 평가 - 총 매수) / 총 매수 * 100
-        BigDecimal investmentProfitRate = totalInvestedAmount.compareTo(BigDecimal.ZERO) > 0
+        BigDecimal investmentProfitRate = totalInvestedAmount.isGreaterThanZero()
                 ? totalEvaluationAmount.subtract(totalInvestedAmount)
-                .divide(totalInvestedAmount, 8, RoundingMode.HALF_UP)
+                .toBigDecimal()
+                .divide(totalInvestedAmount.toBigDecimal(), 8, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 
         // 현금 포함 자산 정보 조회
-        WalletResponse walletResponse = walletService.getUserWallet((long) walletId).getBody();
+        WalletResponse walletResponse = walletService.getUserWallet(walletId).getBody();
         if (walletResponse == null) {
             throw new ErrorException(ErrorCode.WALLET_NOT_FOUND, "null");
         }
 
-        BigDecimal walletBalance = walletResponse.balance(); // 지갑 내 현금 잔액
+        Money walletBalance = Money.of(walletResponse.balance()); // 지갑 내 현금 잔액
 
         // (현금 + 매수금액) 대비 평가 수익률 계산
-        BigDecimal totalInvestedWithCash = walletBalance.add(totalInvestedAmount);         // 현금 + 총 투자금
-        BigDecimal totalEvaluationWithCash = walletBalance.add(totalEvaluationAmount);     // 현금 + 총 평가금
+        Money totalInvestedWithCash = walletBalance.add(totalInvestedAmount);         // 현금 + 총 투자금
+        Money totalEvaluationWithCash = walletBalance.add(totalEvaluationAmount);      // 현금 + 총 평가금
 
-        BigDecimal totalAssetProfitRate = totalInvestedWithCash.compareTo(BigDecimal.ZERO) > 0
+        BigDecimal totalAssetProfitRate = totalInvestedWithCash.isGreaterThanZero()
                 ? totalEvaluationWithCash.subtract(totalInvestedWithCash)
-                .divide(totalInvestedWithCash, 8, RoundingMode.HALF_UP)
+                .toBigDecimal()
+                .divide(totalInvestedWithCash.toBigDecimal(), 8, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 

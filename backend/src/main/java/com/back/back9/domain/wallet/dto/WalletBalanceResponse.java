@@ -27,7 +27,7 @@ public record  WalletBalanceResponse (
                 wallet.getId(),
                 wallet.getUser().getId(),
                 wallet.getAddress(),
-                wallet.getBalance()
+                wallet.getBalance().toBigDecimal()
         );
     }
 

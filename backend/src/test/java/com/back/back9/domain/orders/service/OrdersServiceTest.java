@@ -3,6 +3,7 @@ package com.back.back9.domain.orders.service;
 import com.back.back9.domain.analytics.contoller.AnalyticsControllerTest;
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.orders.dto.OrdersRequest;
 import com.back.back9.domain.orders.dto.OrderResponse;
 import com.back.back9.domain.orders.entity.OrdersMethod;
@@ -69,7 +70,7 @@ public class OrdersServiceTest {
         wallet1 = walletRepository.save(Wallet.builder()
                 .user(user1)
                 .address("Korea")
-                .balance(BigDecimal.valueOf(500_000_000L))
+                .balance(Money.of(500_000_000L))
                 .coinAmounts(new ArrayList<>())  // null 방지
                 .build());
         coin1 = coinRepository.save(Coin.builder()

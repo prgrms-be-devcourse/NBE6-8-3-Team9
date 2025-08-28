@@ -23,7 +23,7 @@ public record WalletResponse(
                 wallet.getId(),
                 wallet.getUser().getId(),  // user.getId()로 변경
                 wallet.getAddress(),
-                wallet.getBalance(),
+                wallet.getBalance().toBigDecimal(),
                 coinAmountResponses
         );
     }
@@ -38,7 +38,7 @@ public record WalletResponse(
                 wallet.getId(),
                 wallet.getUser().getId(),  // user.getId()로 변경
                 wallet.getAddress(),
-                wallet.getBalance(),
+                wallet.getBalance().toBigDecimal(),
                 coinAmountResponses
         );
     }

@@ -2,6 +2,7 @@ package com.back.back9.domain.wallet.controller;
 
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.domain.wallet.dto.BuyCoinRequest;
@@ -77,7 +78,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("1000.50"))
+                    .balance(Money.of(new BigDecimal("1000.50")))
                     .build();
             walletRepository.save(wallet);
 
@@ -101,7 +102,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x987654321")
-                    .balance(BigDecimal.ZERO)
+                    .balance(Money.of(BigDecimal.ZERO))
                     .build();
             walletRepository.save(wallet);
 
@@ -148,7 +149,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("1000.00"))
+                    .balance(Money.of(new BigDecimal("1000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -177,7 +178,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("1000.00"))
+                    .balance(Money.of(new BigDecimal("1000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -200,7 +201,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(initialBalance)
+                    .balance(Money.of(initialBalance))
                     .build();
             walletRepository.save(wallet);
 
@@ -259,7 +260,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("10000.00"))
+                    .balance(Money.of(new BigDecimal("10000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -299,7 +300,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("500.00"))
+                    .balance(Money.of(new BigDecimal("500.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -327,7 +328,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("10000.00"))
+                    .balance(Money.of(new BigDecimal("10000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -371,7 +372,7 @@ public class IntegrationWalletControllerTest {
             Wallet otherWallet = Wallet.builder()
                     .user(otherUser)
                     .address("0x987654321")
-                    .balance(new BigDecimal("10000.00"))
+                    .balance(Money.of(new BigDecimal("10000.00")))
                     .build();
             walletRepository.save(otherWallet);
 
@@ -411,7 +412,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("5000.00"))
+                    .balance(Money.of(new BigDecimal("5000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -465,7 +466,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("10000.00"))
+                    .balance(Money.of(new BigDecimal("10000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -500,7 +501,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("10000.00"))
+                    .balance(Money.of(new BigDecimal("10000.00")))
                     .build();
             walletRepository.save(wallet);
 
@@ -549,7 +550,7 @@ public class IntegrationWalletControllerTest {
             Wallet wallet = Wallet.builder()
                     .user(user)
                     .address("0x123456789")
-                    .balance(new BigDecimal("10000.00"))
+                    .balance(Money.of(new BigDecimal("10000.00")))
                     .build();
             walletRepository.save(wallet);
 

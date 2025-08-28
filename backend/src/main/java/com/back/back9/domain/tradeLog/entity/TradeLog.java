@@ -1,6 +1,8 @@
 package com.back.back9.domain.tradeLog.entity;
 
 import com.back.back9.domain.coin.entity.Coin;
+import com.back.back9.domain.common.vo.money.Money;
+import com.back.back9.domain.common.vo.money.MoneyConverter;
 import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -44,8 +46,8 @@ public class TradeLog extends BaseEntity {
     private BigDecimal quantity;
 
     // 단가
-    @Column(nullable = false, precision = 19, scale = 8)
-    private BigDecimal price;
+    @Convert(converter = MoneyConverter.class)
+    private Money price;
     //DB 저장 안함
 //    @Column(nullable = false, precision = 19, scale = 8)
 //    private BigDecimal profitRate;

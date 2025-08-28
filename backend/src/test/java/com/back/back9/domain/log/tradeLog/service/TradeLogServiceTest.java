@@ -1,6 +1,7 @@
 package com.back.back9.domain.log.tradeLog.service;
 
 import com.back.back9.domain.coin.entity.Coin;
+import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
@@ -9,13 +10,11 @@ import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.domain.wallet.repository.WalletRepository;
 import com.back.back9.domain.coin.repository.CoinRepository;
-import com.back.back9.domain.wallet.service.WalletService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -36,8 +35,6 @@ public class TradeLogServiceTest {
     private CoinRepository coinRepository;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private MockMvc mock;
 
     private Wallet wallet;
     private Coin coin;
@@ -57,7 +54,7 @@ public class TradeLogServiceTest {
         wallet = walletRepository.save(Wallet.builder()
                 .user(user)
                 .address("TestAddress")
-                .balance(BigDecimal.valueOf(1_000_000L))
+                .balance(Money.of(1_000_000L))
                 .coinAmounts(new ArrayList<>())
                 .build());
 
@@ -75,7 +72,7 @@ public class TradeLogServiceTest {
                 .coin(coin)
                 .type(TradeType.BUY)
                 .quantity(new BigDecimal("0.5"))
-                .price(new BigDecimal("43000"))
+                .price(Money.of(43_000L))
                 .build();
 
         TradeLog saved = tradeLogService.save(tradeLog);
