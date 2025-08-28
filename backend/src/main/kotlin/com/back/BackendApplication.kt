@@ -9,8 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @SpringBootApplication
 @EnableJpaAuditing
 @EnableScheduling
-// ⬅️ 2. @ComponentScan이 필요 없습니다.
-//    (실행 파일과 모든 코드가 동일한 루트 패키지 아래에 있기 때문입니다)
 class BackendApplication {
     companion object {
         @JvmStatic

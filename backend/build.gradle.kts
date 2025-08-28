@@ -4,8 +4,9 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
-    kotlin("jvm") version "1.9.23" // 코틀린 JVM 플러그인
-    kotlin("plugin.spring") version "1.9.23" // 코틀린 스프링 플러그인
+
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.spring") version "1.9.23"
 }
 
 group = "com.back"
