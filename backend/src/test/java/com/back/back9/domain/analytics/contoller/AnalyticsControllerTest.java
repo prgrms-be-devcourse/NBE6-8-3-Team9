@@ -47,26 +47,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 public class AnalyticsControllerTest {
-    private static final Logger log = LoggerFactory.getLogger(AnalyticsControllerTest.class);
-
-    @Autowired
-    private AnalyticsController analyticsController;
     @Autowired
     private TradeLogService tradeLogService;
     @Autowired
     private TradeLogRepository tradeLogRepository;
     @Autowired
-    private WalletService walletService;
-    @Autowired
     private WalletRepository walletRepository;
 
     @Autowired
-    private UserService userService;
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private CoinService coinService;
 
     @Autowired
     private CoinRepository coinRepository;

@@ -41,8 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class TradeLogControllerTest {
     @Autowired
-    private TradeLogController tradeLogController;
-    @Autowired
     private TradeLogService tradeLogService;
     @Autowired
     private TradeLogRepository tradeLogRepository;

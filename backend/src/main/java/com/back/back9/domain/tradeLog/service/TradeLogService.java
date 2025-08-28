@@ -43,11 +43,6 @@ public class TradeLogService {
     public List<TradeLog> findAll() {
         return tradeLogRepository.findAll();
     }
-    @Transactional(readOnly = true)
-    public Optional<TradeLog> findLatest() {
-        return tradeLogRepository.findFirstByOrderByIdDesc();
-    }
-
 
     @Transactional(readOnly = true)
     public List<TradeLogDto> findByWalletId(Long walletId) {
@@ -112,10 +107,10 @@ public class TradeLogService {
     }
     @Transactional
     public TradeLogDto save(TradeLogDto tradeLogDto) {
-        Wallet wallet = walletRepository.findById((long) tradeLogDto.walletId())
+        Wallet wallet = walletRepository.findById(tradeLogDto.walletId())
                 .orElseThrow(() -> new EntityNotFoundException("Wallet not found"));
 
-        Coin coin = coinRepository.findById((long) tradeLogDto.coinId())
+        Coin coin = coinRepository.findById(tradeLogDto.coinId())
                 .orElseThrow(() -> new EntityNotFoundException("Coin not found"));
 
         TradeLog tradeLog = TradeLogDto.toEntity(tradeLogDto, wallet, coin);

@@ -230,7 +230,7 @@ public class AnalyticsService {
                 : BigDecimal.ZERO;
 
         // 현금 포함 자산 정보 조회
-        WalletResponse walletResponse = walletService.getUserWallet((long) walletId).getBody();
+        WalletResponse walletResponse = walletService.getUserWallet(walletId).getBody();
         if (walletResponse == null) {
             throw new ErrorException(ErrorCode.WALLET_NOT_FOUND, "null");
         }

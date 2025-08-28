@@ -10,7 +10,6 @@ import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.domain.wallet.entity.Wallet;
 import com.back.back9.domain.wallet.repository.WalletRepository;
 import com.back.back9.domain.coin.repository.CoinRepository;
-import com.back.back9.domain.wallet.service.WalletService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -37,8 +36,6 @@ public class TradeLogServiceTest {
     private CoinRepository coinRepository;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private MockMvc mock;
 
     private Wallet wallet;
     private Coin coin;

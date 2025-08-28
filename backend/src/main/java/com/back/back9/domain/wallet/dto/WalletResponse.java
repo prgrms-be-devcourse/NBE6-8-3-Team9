@@ -1,6 +1,5 @@
 package com.back.back9.domain.wallet.dto;
 
-import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.wallet.entity.CoinAmount;
 import com.back.back9.domain.wallet.entity.Wallet;
 
