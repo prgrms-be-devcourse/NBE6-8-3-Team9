@@ -1,6 +1,5 @@
 package com.back.back9.domain.websocket.service;
 
-import com.back.back9.domain.websocket.mock.MockCoinListProvider;
 import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,9 +26,9 @@ public class CandleWebSocketHandler extends TextWebSocketHandler {
 
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
-    private final MockCoinListProvider coinListProvider;
+    private final DatabaseCoinListProvider coinListProvider;
 
-    public CandleWebSocketHandler(RedisService redisService, ObjectMapper objectMapper, MockCoinListProvider coinListProvider) {
+    public CandleWebSocketHandler(RedisService redisService, ObjectMapper objectMapper, DatabaseCoinListProvider coinListProvider) {
         this.redisService = redisService;
         this.objectMapper = objectMapper;
         this.coinListProvider = coinListProvider;

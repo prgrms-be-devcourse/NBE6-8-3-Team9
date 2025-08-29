@@ -1,6 +1,5 @@
 package com.back.back9.domain.websocket.service;
 
-import com.back.back9.domain.websocket.mock.MockCoinListProvider;
 import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,12 +14,12 @@ import java.util.List;
 public class UpbitRestCandleFetcher {
 
     private final RedisService redisService;
-    private final MockCoinListProvider coinListProvider;
+    private final DatabaseCoinListProvider coinListProvider;
     private final RestTemplate rest = new RestTemplate();
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final int MAX_PER_REQUEST = 200;
 
-    public UpbitRestCandleFetcher(RedisService redisService, MockCoinListProvider coinListProvider) {
+    public UpbitRestCandleFetcher(RedisService redisService, DatabaseCoinListProvider coinListProvider) {
         this.redisService = redisService;
         this.coinListProvider = coinListProvider;
     }
