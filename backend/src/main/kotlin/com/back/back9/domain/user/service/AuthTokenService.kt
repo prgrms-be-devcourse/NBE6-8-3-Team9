@@ -1,7 +1,7 @@
 package com.back.back9.domain.user.service
 
 import com.back.back9.domain.user.entity.User
-import com.back.back9.standard.util.Ut
+import com.back.back9.standard.util.UtJwt
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -20,20 +20,20 @@ class AuthTokenService {
         val username = user.username
         val role = user.role.name
 
-        return Ut.jwt.toString(
-                jwtSecretKey,
-                accessTokenExpirationSeconds,
-                mapOf(
-                        "id" to id,
-                        "userLoginId" to userLoginId,
-                        "username" to username,
-                        "role" to role
-                )
+        return UtJwt.toString( // UtJwt로 변경
+            jwtSecretKey,
+            accessTokenExpirationSeconds,
+            mapOf(
+                "id" to id,
+                "userLoginId" to userLoginId,
+                "username" to username,
+                "role" to role
+            )
         )
     }
 
     fun payload(accessToken: String): Map<String, Any?>? {
-        val parsedPayload = Ut.jwt.payload(jwtSecretKey, accessToken) ?: return null
+        val parsedPayload = UtJwt.payload(jwtSecretKey, accessToken) ?: return null // UtJwt로 변경
 
         val id = (parsedPayload["id"] as? Number)?.toLong()
         val userLoginId = parsedPayload["userLoginId"] as? String
@@ -41,10 +41,10 @@ class AuthTokenService {
         val role = parsedPayload["role"] as? String
 
         return mapOf(
-                "id" to id,
-                "userLoginId" to userLoginId,
-                "username" to username,
-                "role" to role
+            "id" to id,
+            "userLoginId" to userLoginId,
+            "username" to username,
+            "role" to role
         )
     }
 }
