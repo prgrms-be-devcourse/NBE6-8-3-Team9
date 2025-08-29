@@ -1,6 +1,9 @@
-package com.back.back9.domain.websocket.vo;
+package com.back.back9.domain.websocket.vo
 
-public enum CandleInterval {
+enum class CandleInterval(
+    val suffix: String,
+    val maxSize: Int
+) {
     SEC("seconds", 1000),
     MIN_1("minutes/1", 1000),
     MIN_30("minutes/30", 1000),
@@ -10,42 +13,25 @@ public enum CandleInterval {
     MONTH("months", 50),
     YEAR("years", 10);
 
-    private final String redisKeySuffix;
-    private final int maxSize;
+    /**
+     * Redis에서 사용할 최종 키를 생성합니다. (예: "KRW-BTC:minutes/1")
+     */
+    fun redisKey(symbol: String): String = "$symbol:$suffix"
 
-    CandleInterval(String redisKeySuffix, int maxSize) {
-        this.redisKeySuffix = redisKeySuffix;
-        this.maxSize = maxSize;
-    }
-
-    public String redisKey(String symbol) {
-        return symbol + ":" + redisKeySuffix;
-    }
-
-    public String getSuffix() {
-        return redisKeySuffix;
-    }
-
-    public int getMaxSize() {
-        return maxSize;
-    }
-
-    @Override
-    public String toString() {
-        return redisKeySuffix;
-    }
-
-    public static CandleInterval fromWebSocketType(String websocketType) {
-        return switch (websocketType) {
-            case "candle.1s" -> SEC;
-            case "candle.1m" -> MIN_1;
-            case "candle.30m" -> MIN_30;
-            case "candle.1h" -> HOUR_1;
-            case "candle.1d" -> DAY;
-            case "candle.1w" -> WEEK;
-            case "candle.1M" -> MONTH;
-            case "candle.1y" -> YEAR;
-            default -> throw new IllegalArgumentException("Unknown WebSocket candle type: " + websocketType);
-        };
+    /**
+     * 자바의 static 메서드와 동일한 역할을 하는 companion object 입니다.
+     */
+    companion object {
+        fun fromWebSocketType(websocketType: String): CandleInterval = when (websocketType) {
+            "candle.1s" -> SEC
+            "candle.1m" -> MIN_1
+            "candle.30m" -> MIN_30
+            "candle.1h" -> HOUR_1
+            "candle.1d" -> DAY
+            "candle.1w" -> WEEK
+            "candle.1M" -> MONTH
+            "candle.1y" -> YEAR
+            else -> throw IllegalArgumentException("Unknown WebSocket candle type: $websocketType")
+        }
     }
 }
