@@ -44,7 +44,7 @@ class CustomAuthenticationFilter(
         } catch (e: ServiceException) {
             val rsData = e.rsData as RsData<Unit>
             response.contentType = "application/json"
-            response.status = rsData.statusCode()
+            response.status = rsData.statusCode
             response.writer.write(
                 Ut.json.toString(rsData)
             )
@@ -154,8 +154,8 @@ class CustomAuthenticationFilter(
             return Pair(apiKey, accessToken)
         }
 
-        val apiKey = rq.getCookieValue("apiKey", "")
-        val accessToken = rq.getCookieValue("accessToken", "")
-        return Pair(apiKey.ifBlank { null }, accessToken.ifBlank { null })
+        val apiKey: String? = rq.getCookieValue("apiKey", null)
+        val accessToken: String? = rq.getCookieValue("accessToken", null)
+        return Pair(apiKey?.takeIf { it.isNotBlank() }, accessToken?.takeIf { it.isNotBlank() })
     }
 }
