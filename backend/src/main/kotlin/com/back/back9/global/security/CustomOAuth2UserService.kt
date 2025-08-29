@@ -31,6 +31,6 @@ class CustomOAuth2UserService(
                 )
             ).data
 
-        return SecurityUser(user)
+        return SecurityUser(user!!)
     }
 }
