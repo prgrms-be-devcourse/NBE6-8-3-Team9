@@ -69,15 +69,16 @@ public class AnalyticsService {
             log.debug("비어있음" + walletId);
         } else {
             for (TradeLogDto tradeLog : tradeLogs) {
-                log.info(String.valueOf(tradeLog.coinId()));
+                log.info(String.valueOf(tradeLog.getCoinId()));
             }
         }
 
 
         // 코인별로 트레이드 로그 그룹핑
         Map<Long, List<TradeLogDto>> tradeLogsByCoin = tradeLogs.stream()
-                .filter(log -> log.coinId() != null && log.coinId() > 0)
-                .collect(Collectors.groupingBy(TradeLogDto::coinId));
+                .filter(log -> log.getCoinId() != null && log.getCoinId() > 0)
+                .collect(Collectors.groupingBy(TradeLogDto::getCoinId));
+
 
         List<ProfitAnalysisDto> coinAnalytics = new ArrayList<>();
 
@@ -86,7 +87,7 @@ public class AnalyticsService {
 
         Money baseInvestment = Money.of(500_000_000L); // 초기 투자금 (예: 5억 원)
         Money walletLogChargeSum = walletLogsTypeCharge.stream()
-                .map(log -> Money.of(log.price()))   // 각 로그 금액을 Money로 변환
+                .map(log -> Money.of(log.getPrice()))   // 각 로그 금액을 Money로 변환
                 .reduce(Money.zero(), Money::add);
         Money totalInvested = baseInvestment.add(walletLogChargeSum);
 
@@ -106,13 +107,13 @@ public class AnalyticsService {
             // 매수/매도 금액 및 수량 계산
             for (TradeLogDto log : logs) {
                 // 거래 금액 = 가격 × 수량
-                Money tradeAmount = Money.of(log.price()).multiply(log.quantity());
+                Money tradeAmount = Money.of(log.getPrice()).multiply(log.getQuantity());
 
-                if (log.tradeType() == TradeType.BUY) {
-                    totalBuyQuantity = totalBuyQuantity.add(log.quantity());
+                if (log.getTradeType() == TradeType.BUY) {
+                    totalBuyQuantity = totalBuyQuantity.add(log.getQuantity());
                     totalBuyAmount = totalBuyAmount.add(tradeAmount);
-                } else if (log.tradeType() == TradeType.SELL) {
-                    totalSellQuantity = totalSellQuantity.add(log.quantity());
+                } else if (log.getTradeType() == TradeType.SELL) {
+                    totalSellQuantity = totalSellQuantity.add(log.getQuantity());
                     totalSellAmount = totalSellAmount.add(tradeAmount);
                 }
             }
