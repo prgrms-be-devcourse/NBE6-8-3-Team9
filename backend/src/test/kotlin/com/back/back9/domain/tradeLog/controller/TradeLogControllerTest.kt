@@ -22,12 +22,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
-
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 @Tag("trade_log")
 @ActiveProfiles("test")
 @SpringBootTest
@@ -39,7 +40,7 @@ class TradeLogControllerTest @Autowired constructor(
     val userRepository: UserRepository,
     val walletRepository: WalletRepository,
     val coinRepository: CoinRepository,
-    val mockMvc: MockMvc
+    val mvc: MockMvc
 ) {
 
     private lateinit var wallet1: Wallet
@@ -111,127 +112,127 @@ class TradeLogControllerTest @Autowired constructor(
         tradeLogService.saveAll(logs.toMutableList())
     }
 
-//    @Test
-//    @DisplayName("거래 내역 전체 조회")
-//    fun t4() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
-//
-//    @Test
-//    @DisplayName("거래 내역 필터 조회 - 당일, 모든 거래")
-//    fun t5() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            param("startDate", "2025-07-25")
-//            param("endDate", "2025-07-25")
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
-//
-//    @Test
-//    @DisplayName("거래 내역 조회 - 일별, 매수 거래")
-//    fun t6() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            param("startDate", "2025-07-27")
-//            param("endDate", "2025-08-27")
-//            param("type", "BUY")
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
-//
-//    @Test
-//    @DisplayName("거래 내역 조회 - 월별, 매도 거래")
-//    fun t7() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            param("startDate", "2025-07-01")
-//            param("endDate", "2025-08-31")
-//            param("type", "SELL")
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
-//
-//    @Test
-//    @DisplayName("시작일이 종료일보다 이후일 때")
-//    fun t8() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            param("startDate", "2025-03-01")
-//            param("endDate", "2025-01-01")
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
-//
-//    @Test
-//    @DisplayName("모든 필터 없음 (파라미터 없음)")
-//    fun t9() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
-//
-//    @Test
-//    @DisplayName("거래 없음")
-//    fun t10() {
-//        mockMvc.get("/api/tradeLog/wallet/${wallet1.id}") {
-//            param("startDate", "1999-01-01")
-//            param("endDate", "1999-01-31")
-//            contentType = MediaType.APPLICATION_JSON
-//        }
-//            .andDo { print() }
-//            .andExpect {
-//                status { isOk() }
-//                handler {
-//                    handlerType(TradeLogController::class.java)
-//                    methodName("getItems")
-//                }
-//            }
-//    }
+    @Test
+    @DisplayName("거래 내역 전체 조회")
+    fun t4() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(15))
+    }
+
+    @Test
+    @DisplayName("거래 내역 필터 조회 - 당일, 모든 거래")
+    fun t5() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .param("startDate", "2025-07-25")
+            .param("endDate", "2025-07-25")
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(1))
+    }
+
+    @Test
+    @DisplayName("거래 내역 조회 - 일별, 매수 거래")
+    fun t6() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .param("startDate", "2025-07-27")
+            .param("endDate", "2025-08-27")
+            .param("type", "BUY")
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(3))
+    }
+
+    @Test
+    @DisplayName("거래 내역 조회 - 월별, 매도 거래")
+    fun t7() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .param("startDate", "2025-07-01")
+            .param("endDate", "2025-08-31")
+            .param("type", "SELL")
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(2))
+    }
+
+    @Test
+    @DisplayName("시작일이 종료일보다 이후일 때")
+    fun t8() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .param("startDate", "2025-03-01")
+            .param("endDate", "2025-01-01")
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(0))
+    }
+
+    @Test
+    @DisplayName("모든 필터 없음 (파라미터 없음)")
+    fun t9() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(15))
+    }
+
+    @Test
+    @DisplayName("거래 없음")
+    fun t10() {
+        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+
+        val resultActions = mvc.perform(get(url)
+            .param("startDate", "1999-01-01")
+            .param("endDate", "1999-01-31")
+            .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print())
+
+        resultActions
+            .andExpect(status().isOk)
+            .andExpect(handler().handlerType(TradeLogController::class.java))
+            .andExpect(handler().methodName("getItems"))
+        //.andExpect(jsonPath("$.length()").value(0))
+    }
 }

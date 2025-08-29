@@ -38,12 +38,8 @@ class TradeLogService(
         val wallet = walletRepository.findByUserId(userId)
             ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
 
-//        임시
-        return tradeLogRepository.findByWalletId(1L)
+        return tradeLogRepository.findByWalletId(wallet.getId())
             .map { from(it) }
-
-//        return tradeLogRepository.findByWalletId(wallet.getId())
-//            .map { from(it) }
 
     }
 
@@ -70,11 +66,9 @@ class TradeLogService(
     ): Page<TradeLogDto?> {
         val wallet = walletRepository.findByUserId(userId)
             ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
-//임시
-        return tradeLogRepository.findByWalletIdFilter(1L, type, coinId, startDate, endDate, pageable)
+
+        return tradeLogRepository.findByWalletIdFilter(wallet.id!!, type, coinId, startDate, endDate, pageable)
             .map { from(it) }
-//        return tradeLogRepository.findByWalletIdFilter(wallet.id!!, type, coinId, startDate, endDate, pageable)
-//            .map { from(it) }
     }
 
     @Transactional(readOnly = true)
