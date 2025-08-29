@@ -37,7 +37,8 @@ class TradeLogService(
     @Transactional(readOnly = true)
     fun findByWalletId(userId: Long?): List<TradeLogDto> {
         val wallet = walletRepository.findByUserId(userId)
-            ?: throw jakarta.persistence.EntityNotFoundException("지갑ID인 $userId 의 사용자를 찾을 수 없습니다.")
+            ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
+
 //        임시
         return tradeLogRepository.findByWalletId(1L)
             .map { from(it) }
@@ -69,10 +70,12 @@ class TradeLogService(
         pageable: Pageable?
     ): Page<TradeLogDto?> {
         val wallet = walletRepository.findByUserId(userId)
-            .orElseThrow { EntityNotFoundException("사용자 ID $userId 의 지갑을 찾을 수 없습니다.") }
-
-        return tradeLogRepository.findByWalletIdFilter(wallet.id!!, type, coinId, startDate, endDate, pageable)
+            ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
+//임시
+        return tradeLogRepository.findByWalletIdFilter(1L, type, coinId, startDate, endDate, pageable)
             .map { from(it) }
+//        return tradeLogRepository.findByWalletIdFilter(wallet.id!!, type, coinId, startDate, endDate, pageable)
+//            .map { from(it) }
     }
 
     @Transactional(readOnly = true)
