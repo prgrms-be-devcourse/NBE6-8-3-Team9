@@ -1,7 +1,7 @@
 package com.back.back9.global.redis.initializer;
 
-import com.back.back9.domain.websocket.service.UpbitRestCandleFetcher;
-import com.back.back9.domain.websocket.service.UpbitWebSocketConnector;
+import com.back.back9.domain.websocket.service.DatabaseCoinListProvider; // 1. 의존성 추가
+import com.back.back9.domain.websocket.service.RestService;
 import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.EnumMap;
+import java.util.List; // 🚨 import 추가
 import java.util.Map;
 
 import static com.back.back9.domain.websocket.vo.CandleInterval.*;
@@ -20,18 +21,15 @@ import static com.back.back9.domain.websocket.vo.CandleInterval.*;
 public class RedisInitializer {
 
     private final RedisService redisService;
-    private final UpbitRestCandleFetcher fetcher;
-    private final UpbitWebSocketConnector webSocketConnector;
+    private final RestService RestService;
+    private final DatabaseCoinListProvider coinListProvider; // 1. 의존성 추가
 
-    public RedisInitializer(RedisService redisService, UpbitRestCandleFetcher fetcher, UpbitWebSocketConnector webSocketConnector) {
+    // 🚨 2. 생성자 수정
+    public RedisInitializer(RedisService redisService, RestService RestService, DatabaseCoinListProvider coinListProvider) {
         this.redisService = redisService;
-        this.fetcher = fetcher;
-        this.webSocketConnector = webSocketConnector;
+        this.RestService = RestService;
+        this.coinListProvider = coinListProvider;
     }
-
-    private static final int FETCH_BATCH_SIZE = 200;
-    private static final long RATE_LIMIT_DELAY_MS = 3 * 60 * 1000; // 3분
-    private static final long BETWEEN_CALL_DELAY_MS = 200;
 
     private final Map<CandleInterval, Integer> intervalTargetCount = new EnumMap<>(Map.of(
             SEC, 1000,
@@ -39,18 +37,26 @@ public class RedisInitializer {
             MIN_30, 1000,
             HOUR_1, 1000,
             DAY, 500,
-            WEEK, 400,    // 200씩 2번
-            MONTH, 200,   // 1번
-            YEAR, 200     // 1번
+            WEEK, 400,
+            MONTH, 200,
+            YEAR, 200
     ));
 
     @EventListener(ApplicationReadyEvent.class)
     public void afterStartup() {
-        log.info("✅ Spring Boot 부팅 완료, WebSocket 연결 시작");
+        log.info("✅ Spring Boot 부팅 완료, Redis 데이터 초기화를 시작합니다.");
+        log.info("... (WebSocket 연결은 UpbitWebSocketClient가 자동으로 시작합니다)");
 
         redisService.clearAll();
-        webSocketConnector.connect();
 
+        // 🚨 3. 핵심 수정 사항: 데이터 초기화 전에 코인 목록 확인
+        List<String> marketCodes = coinListProvider.getMarketCodes();
+        if (marketCodes.isEmpty()) {
+            log.warn("⚠️ 초기화할 코인 목록이 비어있어 Redis 데이터 보충 작업을 건너뜁니다.");
+            return; // 데이터 초기화 절차를 시작하지 않고 종료
+        }
+
+        // 코인 목록이 있을 때만 백그라운드 스레드에서 데이터 초기화 시작
         new Thread(this::initializeCandles).start();
     }
 
@@ -60,24 +66,17 @@ public class RedisInitializer {
         for (Map.Entry<CandleInterval, Integer> entry : intervalTargetCount.entrySet()) {
             CandleInterval interval = entry.getKey();
             int target = entry.getValue();
-            int fetched = 0;
 
-            while (fetched < target) {
-                try {
-                    int count = Math.min(FETCH_BATCH_SIZE, target - fetched);
-                    int inserted = fetcher.fetchUntil(interval, count);
+            try {
+                int inserted = RestService.fetchUntil(interval, target);
+                log.info("✅ {} 캔들 {}개 등록 완료 (목표: {})", interval.name(), inserted, target);
 
-                    fetched += inserted;
-                    Thread.sleep(BETWEEN_CALL_DELAY_MS);
-                } catch (HttpClientErrorException.TooManyRequests e) {
-                    log.warn("⏸️ 429 Too Many Requests 발생: 3분간 전체 수집 중단 후 재시도");
-                    sleep();
-                } catch (Exception e) {
-                    log.error("❌ {} 캔들 수집 중 오류: {}", interval.name(), e.getMessage());
-                    return;
-                }
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                log.warn("⏸️ 429 Too Many Requests 발생: 3분간 전체 수집 중단 후 재시도");
+                sleep();
+            } catch (Exception e) {
+                log.error("❌ {} 캔들 수집 중 심각한 오류 발생: {}", interval.name(), e.getMessage());
             }
-            log.info("✅ {} 캔들 {}개 등록 완료 (목표: {})", interval.name(), fetched, target);
         }
         redisService.sortAndRewrite();
         log.info("🎉 전체 캔들 초기화 완료");
@@ -85,7 +84,7 @@ public class RedisInitializer {
 
     private void sleep() {
         try {
-            Thread.sleep(RedisInitializer.RATE_LIMIT_DELAY_MS);
+            Thread.sleep(3 * 60 * 1000); // 3분
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
