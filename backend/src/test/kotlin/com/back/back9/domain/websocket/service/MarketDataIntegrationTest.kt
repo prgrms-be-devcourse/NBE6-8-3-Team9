@@ -70,13 +70,9 @@ class MarketDataIntegrationTest {
      */
     @BeforeEach
     fun setUp() {
-        // DB 초기화
         coinRepository.deleteAll()
-
-        // Redis 초기화 (RedisService의 clearAll 사용)
         redisService.clearAll()
     }
-
     /**
      * 1번 테스트: 초기 코인 목록 세팅 및 REST API 데이터 수집 검증
      */
