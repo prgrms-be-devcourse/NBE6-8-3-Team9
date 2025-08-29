@@ -3,7 +3,6 @@ package com.back.back9.domain.orders.dto
 import com.back.back9.domain.orders.entity.Orders
 import java.math.BigDecimal
 
-@JvmRecord
 data class OrderResponse(
     val coinId: Long?,
     val coinSymbol: String?,
@@ -16,19 +15,16 @@ data class OrderResponse(
     val createdAt: String?
 ) {
     companion object {
-        fun from(order: Orders): OrderResponse {
-            val coin = order.getCoin()
-            return OrderResponse(
-                coin.getId(),
-                coin.symbol,
-                coin.koreanName,
-                order.getOrdersMethod().name,
-                order.getOrdersStatus().name,
-                order.getTradeType().name,
-                order.getPrice(),
-                order.getQuantity(),
-                order.getCreatedAt().toString()
-            )
-        }
+        fun from(order: Orders): OrderResponse = OrderResponse(
+            coinId = order.coin?.id,
+            coinSymbol = order.coin?.symbol,
+            coinName = order.coin?.koreanName,
+            orderMethod = order.ordersMethod?.name,
+            orderStatus = order.ordersStatus?.name,
+            tradeType = order.tradeType?.name,
+            price = order.price,
+            quantity = order.quantity,
+            createdAt = order.createdAt?.toString()
+        )
     }
 }

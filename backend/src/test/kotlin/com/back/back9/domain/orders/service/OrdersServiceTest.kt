@@ -61,7 +61,7 @@ class OrdersServiceTest {
                 .user(user1!!)
                 .address("Korea")
                 .balance(Money.of(500000000L))
-                .coinAmounts(ArrayList<CoinAmount?>()) // null 방지
+                .coinAmounts(ArrayList<CoinAmount>()) // null 방지
                 .build()
         )
         coin1 = coinRepository.save<Coin>(

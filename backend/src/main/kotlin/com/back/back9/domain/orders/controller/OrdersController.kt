@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.*
 @Slf4j
 class OrdersController(private val ordersService: OrdersService) {
     @GetMapping("/wallet/{wallet_id}")
-    fun getOrders(@PathVariable wallet_id: Long?): ResponseEntity<MutableList<OrderResponse?>?> {
-        return ResponseEntity.ok<MutableList<OrderResponse?>?>(ordersService.getOrdersByWalletId(wallet_id))
+    fun getOrders(@PathVariable wallet_id: Long?): ResponseEntity<List<OrderResponse?>?> {
+        return ResponseEntity.ok<List<OrderResponse?>?>(ordersService.getOrdersByWalletId(wallet_id))
     }
 
     @PostMapping("/wallet/{wallet_id}")
     fun executeTrade(
-        @PathVariable("wallet_id") walletId: Long?,
-        @RequestBody ordersRequest: OrdersRequest?
+        @PathVariable("wallet_id") walletId: Long,
+        @RequestBody ordersRequest: OrdersRequest
     ): ResponseEntity<OrderResponse?> {
         val response = ordersService.executeTrade(walletId, ordersRequest)
         return ResponseEntity.ok<OrderResponse?>(response)
