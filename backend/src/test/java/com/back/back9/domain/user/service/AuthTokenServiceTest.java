@@ -3,6 +3,7 @@ package com.back.back9.domain.user.service;
 import com.back.back9.domain.user.entity.User;
 import com.back.back9.domain.user.repository.UserRepository;
 import com.back.back9.standard.util.Ut;
+import com.back.back9.standard.util.UtJwt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,20 +71,20 @@ public class AuthTokenServiceTest {
     }
 
     @Test
-    @DisplayName("Ut.jwt.toString으로 JWT 생성, {name=Paul, age=23}")
+    @DisplayName("UtJwt.toString으로 JWT 생성, {name=Paul, age=23}")
     void t2() {
         Map<String, Object> payload = Map.of("name", "Paul", "age", 23);
 
-        String jwt = Ut.jwt.toString(
+        String jwt = UtJwt.INSTANCE.toString(
                 jwtSecretKey,
                 accessTokenExpirationSeconds,
                 payload
         );
 
         assertThat(jwt).isNotBlank();
-        assertThat(Ut.jwt.isValid(jwtSecretKey, jwt)).isTrue();
+        assertThat(UtJwt.INSTANCE.isValid(jwtSecretKey, jwt)).isTrue();
 
-        Map<String, Object> parsedPayload = Ut.jwt.payload(jwtSecretKey, jwt);
+        Map<String, Object> parsedPayload = UtJwt.INSTANCE.payload(jwtSecretKey, jwt);
 
         assertThat(parsedPayload).containsAllEntriesOf(payload);
     }
