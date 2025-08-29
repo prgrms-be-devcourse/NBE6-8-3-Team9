@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     // 서비스 계층 에러 (RsData 포맷)
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<RsData<Void>> handleServiceException(ServiceException ex) {
-        return ResponseEntity.status(ex.getRsData().statusCode()).body(ex.getRsData());
+        return ResponseEntity.status(ex.getRsData().getStatusCode()).body(ex.getRsData());
     }
 
     // @Valid 바인딩 에러
