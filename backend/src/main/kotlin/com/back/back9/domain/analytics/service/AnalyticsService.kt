@@ -44,9 +44,9 @@ class AnalyticsService(
      *   5-5. 분석 결과 객체에 저장
      */
     @Transactional(readOnly = true)
-    fun calculateRealizedProfitRates(walletId: Long?): ProfitRateResponse {
+    fun calculateRealizedProfitRates(walletId: Long): ProfitRateResponse {
         // 지갑에 해당하는 모든 트레이드 로그 조회 (매수, 매도, 충전 포함)
-        val tradeLogs: MutableList<TradeLogDto> = tradeLogService.findByWalletId(walletId)
+        val tradeLogs: List<TradeLogDto> = tradeLogService.findByWalletId(walletId)
         if (tradeLogs.isEmpty()) {
             log.debug("비어있음" + walletId)
         } else {
@@ -58,14 +58,13 @@ class AnalyticsService(
 
         // 코인별로 트레이드 로그 그룹핑
         val tradeLogsByCoin = tradeLogs.stream()
-            .filter { log: TradeLogDto? -> log!!.coinId != null && log.coinId > 0 }
-            .collect(Collectors.groupingBy(TradeLogDto::coinId))
-
+            .filter { log -> (log.coinId ?: 0) > 0 }
+            .collect(Collectors.groupingBy { it.coinId })
 
         val coinAnalytics: MutableList<ProfitAnalysisDto?> = ArrayList<ProfitAnalysisDto?>()
 
         // 충전(CHARGE) 로그만 추출하여 총 투자금 계산 (단순 가격 합산)
-        val walletLogsTypeCharge: MutableList<TradeLogDto?> = tradeLogService.findByWalletIdAndTypeCharge(walletId)
+        val walletLogsTypeCharge: List<TradeLogDto?> = tradeLogService.findByWalletIdAndTypeCharge(walletId)
 
         val baseInvestment = Money.of(500000000L) // 초기 투자금 (예: 5억 원)
         val walletLogChargeSum = walletLogsTypeCharge.stream()
@@ -170,7 +169,7 @@ class AnalyticsService(
      * 5. 전체 자산 기준 수익률 계산을 위해 총 투자금액, 총 평가금액 누적
      */
     @Transactional(readOnly = true)
-    fun calculateUnRealizedProfitRates(walletId: Long?): ProfitRateResponse {
+    fun calculateUnRealizedProfitRates(walletId: Long): ProfitRateResponse {
         // 사용자 지갑 내 보유 코인 정보 조회 (코인 ID, 수량, 평균 매수가 등 포함)
         val coinHoldingInfos = walletService.getCoinHoldingsByUserId(walletId)
 

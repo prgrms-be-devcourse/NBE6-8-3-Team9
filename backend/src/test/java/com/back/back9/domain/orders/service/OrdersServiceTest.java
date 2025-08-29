@@ -1,6 +1,6 @@
 package com.back.back9.domain.orders.service;
 
-import com.back.back9.domain.analytics.contoller.AnalyticsControllerTest;
+import com.back.back9.domain.analytics.AnalyticsControllerTest;
 import com.back.back9.domain.coin.entity.Coin;
 import com.back.back9.domain.coin.repository.CoinRepository;
 import com.back.back9.domain.common.vo.money.Money;
@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 public class OrdersServiceTest {
-    private static final Logger log = LoggerFactory.getLogger(AnalyticsControllerTest.class);
 
     @Autowired
     private OrdersService ordersService;
@@ -99,7 +98,7 @@ public class OrdersServiceTest {
         assertEquals(BigDecimal.valueOf(0.1), orderResponse.quantity());
         assertEquals(BigDecimal.valueOf(10_000_000L), orderResponse.price());
         assertEquals("BUY", orderResponse.tradeType());
-        log.info("매수 주문 성공: {}", orderResponse);
+//        log.info("매수 주문 성공: {}", orderResponse);
         //oinAmountRepository.findByWalletId 함수 구현이 안되어있어 주석 처리
 //        CoinAmount coinAmount = coinAmountRepository.findByWalletId(wallet1.getId())
 //                .orElseThrow(() -> new IllegalArgumentException("코인 금액 정보를 찾을 수 없습니다."));

@@ -57,18 +57,17 @@ class AnalyticsControllerTest {
 
     @Autowired
     private val mockMvc: MockMvc? = null
-    private var user1: User? = null
-    private var user2: User? = null
-    private var user3: User? = null
+    private lateinit var user1: User
+    private lateinit var user2: User
+    private lateinit var user3: User
+    private lateinit var coin1: Coin
+    private lateinit var coin2: Coin
+    private lateinit var coin3: Coin
+    private lateinit var coin4: Coin
 
-    private var coin1: Coin? = null
-    private var coin2: Coin? = null
-    private var coin3: Coin? = null
-    private var coin4: Coin? = null
-
-    private var wallet1: Wallet? = null
-    private var wallet2: Wallet? = null
-    private var wallet3: Wallet? = null
+    private lateinit var wallet1: Wallet
+    private lateinit var wallet2: Wallet
+    private lateinit var wallet3: Wallet
 
     @BeforeEach
     fun setUp() {
@@ -119,7 +118,7 @@ class AnalyticsControllerTest {
                 .user(user1)
                 .address("Korea")
                 .balance(Money.of(500000000L))
-                .coinAmounts(ArrayList<CoinAmount?>()) // null 방지
+                .coinAmounts(ArrayList<CoinAmount>())
                 .build()
         )
         wallet2 = walletRepository.save<Wallet?>(
@@ -127,7 +126,7 @@ class AnalyticsControllerTest {
                 .user(user2)
                 .address("Korea")
                 .balance(Money.of(500000000L))
-                .coinAmounts(ArrayList<CoinAmount?>())
+                .coinAmounts(ArrayList<CoinAmount>())
                 .build()
         )
         wallet3 = walletRepository.save<Wallet?>(
@@ -135,7 +134,7 @@ class AnalyticsControllerTest {
                 .user(user3)
                 .address("Korea")
                 .balance(Money.of(500000000L))
-                .coinAmounts(ArrayList<CoinAmount?>())
+                .coinAmounts(ArrayList<CoinAmount>())
                 .build()
         )
     }
@@ -143,7 +142,7 @@ class AnalyticsControllerTest {
     fun tradeLogCreate() {
         if (tradeLogService!!.count() > 0) return
 
-        val logs: MutableList<TradeLog?> = ArrayList<TradeLog?>()
+        val logs: MutableList<TradeLog> = ArrayList()
         val baseDate = LocalDateTime.of(2025, 7, 25, 0, 0)
 
         for (i in 1..15) {
@@ -234,8 +233,8 @@ class AnalyticsControllerTest {
             .totalAmount(Money.of(410000000L))
             .build()
 
-        wallet1!!.getCoinAmounts().add(ca1)
-        wallet1!!.getCoinAmounts().add(ca2)
+        wallet1.coinAmounts.add(ca1)
+        wallet1.coinAmounts.add(ca2)
         coinAmountRepository!!.save<CoinAmount?>(ca1)
         coinAmountRepository.save<CoinAmount?>(ca2)
     }

@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 class AnalyticsController(private val analyticsService: AnalyticsService) {
     @GetMapping("/wallet/{walletId}/realized")
-    fun calculateRealizedProfitRates(@PathVariable walletId: Long?): ResponseEntity<ProfitRateResponse?> {
+    fun calculateRealizedProfitRates(@PathVariable walletId: Long): ResponseEntity<ProfitRateResponse?> {
         val response = analyticsService.calculateRealizedProfitRates(walletId)
         return ResponseEntity.ok<ProfitRateResponse?>(response)
     }
 
     @GetMapping("/wallet/{walletId}/unrealized")
-    fun calculateUnRealizedProfitRates(@PathVariable walletId: Long?): ResponseEntity<ProfitRateResponse?> {
+    fun calculateUnRealizedProfitRates(@PathVariable walletId: Long): ResponseEntity<ProfitRateResponse?> {
         val response = analyticsService.calculateUnRealizedProfitRates(walletId)
         return ResponseEntity.ok<ProfitRateResponse?>(response)
     }
