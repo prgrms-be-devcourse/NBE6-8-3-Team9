@@ -38,14 +38,14 @@ class TradeLogServiceTest {
 
     private var wallet: Wallet? = null
     private var coin: Coin? = null
-    private var user: User? = null
+    private lateinit var user: User
 
     @BeforeEach
     fun setUp() {
         userRepository!!.deleteAll()
         walletRepository!!.deleteAll()
         coinRepository!!.deleteAll()
-        user = userRepository.save<User?>(
+        user = userRepository.save<User>(
             User.builder()
                 .userLoginId("user1")
                 .username("테스트유저")
@@ -59,7 +59,7 @@ class TradeLogServiceTest {
                 .user(user)
                 .address("TestAddress")
                 .balance(Money.of(1000000L))
-                .coinAmounts(ArrayList<CoinAmount?>())
+                .coinAmounts(ArrayList<CoinAmount?>() as MutableList<CoinAmount>)
                 .build()
         )
 

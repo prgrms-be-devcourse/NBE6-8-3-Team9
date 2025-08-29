@@ -1,6 +1,5 @@
 package com.back.back9.domain.tradeLog.service
 
-import com.back.back9.domain.wallet.entity.Wallet
 //import mu.KotlinLogging
 import com.back.back9.domain.coin.entity.Coin
 import com.back.back9.domain.coin.repository.CoinRepository
@@ -35,7 +34,7 @@ class TradeLogService(
         tradeLogRepository.findAll()
 
     @Transactional(readOnly = true)
-    fun findByWalletId(userId: Long?): List<TradeLogDto> {
+    fun findByWalletId(userId: Long): List<TradeLogDto> {
         val wallet = walletRepository.findByUserId(userId)
             ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
 
@@ -62,7 +61,7 @@ class TradeLogService(
 
     @Transactional(readOnly = true)
     fun findByUserIdAndFilter(
-        userId: Long?,
+        userId: Long,
         type: TradeType?,
         coinId: Int?,
         startDate: LocalDateTime?,
@@ -79,7 +78,7 @@ class TradeLogService(
     }
 
     @Transactional(readOnly = true)
-    fun findByWalletIdAndTypeCharge(walletId: Long?): List<TradeLogDto> =
+    fun findByWalletIdAndTypeCharge(walletId: Long): List<TradeLogDto> =
         findByWalletId(walletId)
             .filter { it.tradeType == TradeType.CHARGE }
 
