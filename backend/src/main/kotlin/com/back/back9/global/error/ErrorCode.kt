@@ -1,8 +1,12 @@
-package com.back.back9.global.error;
+package com.back.back9.global.error
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus
 
-public enum ErrorCode {
+enum class ErrorCode(
+    val status: HttpStatus,
+    val code: String,
+    val defaultDetail: String
+) {
     // 400
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "400-INVALID-REQUEST", "잘못된 요청입니다."),
     // 401
@@ -19,31 +23,8 @@ public enum ErrorCode {
     INVALID_COIN_DATA(HttpStatus.UNPROCESSABLE_ENTITY, "422-INVALID-COIN-DATA", "유효하지 않은 코인 데이터입니다. coinAmountId=%s"),
     // 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "409-DUPLICATED-EMAIL", "이미 존재하는 이메일입니다. email=%s"),
-    INSUFFICIENT_BALANCE(HttpStatus.CONFLICT,"409-INSUFFICIENT-BALANCE" ,"잔액이 부족합니다" ),
-
+    INSUFFICIENT_BALANCE(HttpStatus.CONFLICT, "409-INSUFFICIENT-BALANCE", "잔액이 부족합니다"),
     // 500
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "500-INTERNAL-ERROR", "서버 내부 오류입니다."),
     BACKUP_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "500-BACKUP-FAIL", "백업에 실패했습니다.");
-
-    private final HttpStatus status;
-    private final String code;
-    private final String defaultDetail; // detail 포맷(가변 인자 치환용)
-
-    ErrorCode(HttpStatus status, String code, String defaultDetail) {
-        this.status = status;
-        this.code = code;
-        this.defaultDetail = defaultDetail;
-    }
-
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getDefaultDetail() {
-        return defaultDetail;
-    }
 }
