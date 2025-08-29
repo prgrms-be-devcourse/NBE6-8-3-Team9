@@ -1,4 +1,4 @@
-package com.back.back9.websocket.service
+package com.back.back9.domain.websocket.service
 
 import com.back.back9.domain.coin.service.CoinDataChangedEvent
 import com.back.back9.domain.coin.service.CoinService

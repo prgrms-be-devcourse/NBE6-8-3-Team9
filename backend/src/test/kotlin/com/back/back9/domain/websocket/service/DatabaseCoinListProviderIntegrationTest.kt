@@ -3,6 +3,7 @@ package com.back.back9.websocket.service
 import com.back.back9.domain.coin.entity.Coin
 import com.back.back9.domain.coin.repository.CoinRepository
 import com.back.back9.domain.coin.service.CoinService
+import com.back.back9.domain.websocket.service.DatabaseCoinListProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

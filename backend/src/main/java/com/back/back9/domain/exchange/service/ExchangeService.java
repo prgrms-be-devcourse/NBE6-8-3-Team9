@@ -2,7 +2,7 @@ package com.back.back9.domain.exchange.service;
 
 import com.back.back9.domain.exchange.dto.CoinPriceResponse;
 import com.back.back9.domain.exchange.dto.ExchangeDTO;
-import com.back.back9.websocket.service.DatabaseCoinListProvider;
+import com.back.back9.domain.websocket.service.DatabaseCoinListProvider;
 import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;

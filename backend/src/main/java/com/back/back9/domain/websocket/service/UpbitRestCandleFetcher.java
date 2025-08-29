@@ -1,6 +1,5 @@
 package com.back.back9.domain.websocket.service;
 
-import com.back.back9.websocket.service.DatabaseCoinListProvider;
 import com.back.back9.domain.websocket.vo.CandleInterval;
 import com.back.back9.global.redis.service.RedisService;
 import com.fasterxml.jackson.databind.JsonNode;
