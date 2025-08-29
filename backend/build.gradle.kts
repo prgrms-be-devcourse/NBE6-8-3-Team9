@@ -139,7 +139,7 @@ domains.forEach { d ->
 }
 
 sourceSets.create("integrationTest") {
-    java.srcDir("src/integrationTest/java")
+    java.srcDir("src/integrationTest/kotlin")
     resources.srcDir("src/integrationTest/resources")
     compileClasspath += sourceSets["main"].output + configurations["testRuntimeClasspath"]
     runtimeClasspath += output + compileClasspath
