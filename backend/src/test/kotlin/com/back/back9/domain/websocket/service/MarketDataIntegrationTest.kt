@@ -70,16 +70,17 @@ class MarketDataIntegrationTest {
      */
     @BeforeEach
     fun setUp() {
-        // 3-1. DB 초기화
         coinRepository.deleteAll()
-
-        // 3-2. Redis 초기화
         redisService.clearAll()
 
-        // 3-3. Redis 초기화 확인 (CI 환경용)
-        val keys = redisTemplate.keys("*")
-        println("Redis keys after clearAll: $keys")
-        assertThat(keys).isEmpty()
+        // Redis 완전 초기화 확인
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < 2000) {
+            val keys = redisTemplate.keys("*")
+            if (keys.isEmpty()) break
+            Thread.sleep(50)
+        }
+        assertThat(redisTemplate.keys("*")).isEmpty()
     }
 
     /**
