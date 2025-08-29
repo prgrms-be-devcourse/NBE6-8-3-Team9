@@ -7,9 +7,7 @@ import com.back.back9.domain.common.vo.money.Money;
 import com.back.back9.domain.exchange.dto.CoinPriceResponse;
 import com.back.back9.domain.exchange.service.ExchangeService;
 import com.back.back9.domain.tradeLog.dto.TradeLogDto;
-import com.back.back9.domain.tradeLog.entity.TradeLog;
 import com.back.back9.domain.tradeLog.entity.TradeType;
-import com.back.back9.domain.tradeLog.repository.TradeLogRepository;
 import com.back.back9.domain.tradeLog.service.TradeLogService;
 import com.back.back9.domain.wallet.dto.CoinHoldingInfo;
 import com.back.back9.domain.wallet.dto.WalletResponse;
@@ -193,14 +191,14 @@ public class AnalyticsService {
 
         for (CoinHoldingInfo info : coinHoldingInfos) {
             // 최신 시세 정보 조회
-            CoinPriceResponse coinPriceResponse = exchangeService.getLatestCandleByScan(info.coinName());
+            CoinPriceResponse coinPriceResponse = exchangeService.getLatestCandleByScan(info.getCoinName());
 
-            BigDecimal quantity = info.quantity();               // 현재 보유 수량
-            Money avgBuyPrice = Money.of(info.averageBuyPrice());    // 평균 매수가
+            BigDecimal quantity = info.getQuantity();               // 현재 보유 수량
+            Money avgBuyPrice = Money.of(info.getAverageBuyPrice());    // 평균 매수가
             Money currentPrice = Money.of(coinPriceResponse.getPrice()); // 현재가
 
             log.info("코인: {}, 현재가: {}, 수량: {}, 평균단가: {}",
-                    info.coinName(), currentPrice, quantity, avgBuyPrice);
+                    info.getCoinName(), currentPrice, quantity, avgBuyPrice);
 
             // 수익률 = (현재가 - 평균단가) / 평균단가 * 100
             BigDecimal profitRate = avgBuyPrice.isGreaterThanZero()
@@ -212,7 +210,7 @@ public class AnalyticsService {
 
             // 개별 코인 수익률 분석 정보 추가
             coinAnalytics.add(new ProfitAnalysisDto(
-                    String.valueOf(info.coinId()),
+                    String.valueOf(info.getCoinId()),
                     quantity,
                     avgBuyPrice.toBigDecimal(),   // DTO는 BigDecimal 유지
                     profitRate
@@ -239,7 +237,7 @@ public class AnalyticsService {
             throw new ErrorException(ErrorCode.WALLET_NOT_FOUND, "null");
         }
 
-        Money walletBalance = Money.of(walletResponse.balance()); // 지갑 내 현금 잔액
+        Money walletBalance = Money.of(walletResponse.getBalance()); // 지갑 내 현금 잔액
 
         // (현금 + 매수금액) 대비 평가 수익률 계산
         Money totalInvestedWithCash = walletBalance.add(totalInvestedAmount);         // 현금 + 총 투자금
