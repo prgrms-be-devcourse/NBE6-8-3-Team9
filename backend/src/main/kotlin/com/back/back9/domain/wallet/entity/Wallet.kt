@@ -28,7 +28,6 @@ open class Wallet() : BaseEntity() {
     @NotNull
     lateinit var address: String
 
-    @Convert(converter = MoneyConverter::class)
     @NotNull
     var balance: Money = Money.of(500_000_000L)
 
