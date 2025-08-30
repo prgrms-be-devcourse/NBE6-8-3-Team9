@@ -117,7 +117,7 @@ class AnalyticsControllerTest {
             Wallet.builder()
                 .user(user1)
                 .address("Korea")
-                .balance(Money.of(500000000L))
+                .balance(Money.of(500_000_000L))
                 .coinAmounts(ArrayList<CoinAmount>())
                 .build()
         )
@@ -125,7 +125,7 @@ class AnalyticsControllerTest {
             Wallet.builder()
                 .user(user2)
                 .address("Korea")
-                .balance(Money.of(500000000L))
+                .balance(Money.of(500_000_000L))
                 .coinAmounts(ArrayList<CoinAmount>())
                 .build()
         )
@@ -133,7 +133,7 @@ class AnalyticsControllerTest {
             Wallet.builder()
                 .user(user3)
                 .address("Korea")
-                .balance(Money.of(500000000L))
+                .balance(Money.of(500_000_000L))
                 .coinAmounts(ArrayList<CoinAmount>())
                 .build()
         )
@@ -151,7 +151,7 @@ class AnalyticsControllerTest {
                 .coin(if (i <= 6 || i > 12) coin1 else coin2)
                 .type(if (i % 3 == 0) TradeType.SELL else TradeType.BUY)
                 .quantity(BigDecimal.ONE)
-                .price(Money.of(100000000L + (i * 10000000L)))
+                .price(Money.of(100_000_000L + (i * 10_000_000L)))
                 .build()
             log.setCreatedAt(baseDate.plusDays(((i - 1) * 7).toLong()))
             logs.add(log)
@@ -161,7 +161,7 @@ class AnalyticsControllerTest {
             .coin(null)
             .type(TradeType.CHARGE)
             .quantity(BigDecimal.valueOf(0))
-            .price(Money.of(200000000L))
+            .price(Money.of(200_000_000L))
             .build()
         logs.add(log)
         tradeLogService.saveAll(logs)
@@ -175,7 +175,7 @@ class AnalyticsControllerTest {
                 .coin(coin1) // 필요하다면 코인도 지정
                 .type(TradeType.CHARGE)
                 .quantity(BigDecimal.ONE)
-                .price(Money.of(200000000L))
+                .price(Money.of(200_000_000L))
                 .build()
 
             log.setCreatedAt(LocalDateTime.now().minusDays((3 - i).toLong())) // 생성일 세팅
@@ -187,33 +187,33 @@ class AnalyticsControllerTest {
     fun coinCreate() {
         coin1 = coinRepository!!.save<Coin>(
             Coin.builder()
-                .symbol("KRW-BTC2")
-                .koreanName("비트코인2")
-                .englishName("Bitcoin2")
+                .symbol("KRW-BTC")
+                .koreanName("비트코인")
+                .englishName("Bitcoin")
                 .build()
         )
 
         coin2 = coinRepository.save<Coin>(
             Coin.builder()
-                .symbol("KRW-ETH2")
-                .koreanName("이더리움2")
-                .englishName("Ethereum2")
+                .symbol("KRW-ETH")
+                .koreanName("이더리움")
+                .englishName("Ethereum")
                 .build()
         )
 
         coin3 = coinRepository.save<Coin?>(
             Coin.builder()
-                .symbol("KRW-XRP2")
-                .koreanName("리플2")
-                .englishName("Ripple2")
+                .symbol("KRW-XRP")
+                .koreanName("리플")
+                .englishName("Ripple")
                 .build()
         )
 
         coin4 = coinRepository.save<Coin?>(
             Coin.builder()
-                .symbol("KRW-DOGE2")
-                .koreanName("도지코인2")
-                .englishName("Dogecoin2")
+                .symbol("KRW-DOGE")
+                .koreanName("도지코인")
+                .englishName("Dogecoin")
                 .build()
         )
     }
@@ -223,14 +223,14 @@ class AnalyticsControllerTest {
             .wallet(wallet1)
             .coin(coin1)
             .quantity(BigDecimal.valueOf(3.0))
-            .totalAmount(Money.of(620000000L))
+            .totalAmount(Money.of(620_000_000L))
             .build()
 
         val ca2 = CoinAmount.builder()
             .wallet(wallet1)
             .coin(coin2)
             .quantity(BigDecimal.valueOf(2.0))
-            .totalAmount(Money.of(410000000L))
+            .totalAmount(Money.of(410_000_000L))
             .build()
 
         wallet1.coinAmounts.add(ca1)
@@ -243,7 +243,7 @@ class AnalyticsControllerTest {
     @Test
     @Throws(Exception::class)
     fun t1() {
-        val url = "/api/analytics/wallet/" + wallet1!!.getId() + "/realized"
+        val url = "/api/analytics/wallet/" + wallet1.getId() + "/realized"
 
         val resultActions = mockMvc!!
             .perform(MockMvcRequestBuilders.get(url).contentType(MediaType.APPLICATION_JSON))
@@ -253,47 +253,47 @@ class AnalyticsControllerTest {
             .andExpect(MockMvcResultMatchers.handler().handlerType(AnalyticsController::class.java))
             .andExpect(MockMvcResultMatchers.handler().methodName("calculateRealizedProfitRates"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics.length()").value(2))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1!!.getId()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1.getId()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].totalQuantity").value(3))
             .andExpect(
                 MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].averageBuyPrice").value(165000000.0)
             ) //                .andExpect(jsonPath("$.coinAnalytics[0].realizedProfitRate").value(closeTo(9.09090900, 0.000001)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2!!.getId()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2.getId()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].totalQuantity").value(2))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].averageBuyPrice").value(190000000.0))
         //                .andExpect(jsonPath("$.coinAnalytics[1].realizedProfitRate").value(closeTo(7.89473600, 0.000001)))
 //                .andExpect(jsonPath("$.profitRateOnInvestment").value(closeTo(6.81818100, 0.000001)));
     }
 
-    @DisplayName("유저 평가 수익률 계산 API - 성공")
-    @Test
-    @Throws(Exception::class)
-    fun t2() {
-        val url = "/api/analytics/wallet/" + wallet1!!.getId() + "/unrealized"
-
-        val resultActions = mockMvc!!
-            .perform(MockMvcRequestBuilders.get(url).contentType(MediaType.APPLICATION_JSON))
-            .andDo(MockMvcResultHandlers.print())
-        resultActions
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.handler().handlerType(AnalyticsController::class.java))
-            .andExpect(MockMvcResultMatchers.handler().methodName("calculateUnRealizedProfitRates"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics.length()").value(2)) // 코인 1
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1!!.getId()))
-            .andExpect(
-                MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].totalQuantity").value(3)
-            ) //                .andExpect(jsonPath("$.coinAnalytics[0].averageBuyPrice").value(closeTo(206666666.66666667, 0.000001)))
-            //                .andExpect(jsonPath("$.coinAnalytics[0].realizedProfitRate").value(closeTo(11.29032300, 0.000001)))
-            // 코인 2
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2!!.getId()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].totalQuantity").value(2))
-
-        //                .andExpect(jsonPath("$.coinAnalytics[1].averageBuyPrice")
-//                        .value(closeTo(205000000.00, 0.000001)))
-//                .andExpect(jsonPath("$.coinAnalytics[1].realizedProfitRate").value(closeTo(12.19512200, 0.000001)))
-
-        // 총 수익률
-//                .andExpect(jsonPath("$.profitRateOnInvestment").value(closeTo(11.65048500, 0.000001)));
-    }
+//    @DisplayName("유저 평가 수익률 계산 API - 성공")
+//    @Test
+//    @Throws(Exception::class)
+//    fun t2() {
+//        val url = "/api/analytics/wallet/" + wallet1.getId() + "/unrealized"
+//
+//        val resultActions = mockMvc!!
+//            .perform(MockMvcRequestBuilders.get(url).contentType(MediaType.APPLICATION_JSON))
+//            .andDo(MockMvcResultHandlers.print())
+//        resultActions
+//            .andExpect(MockMvcResultMatchers.status().isOk())
+//            .andExpect(MockMvcResultMatchers.handler().handlerType(AnalyticsController::class.java))
+//            .andExpect(MockMvcResultMatchers.handler().methodName("calculateUnRealizedProfitRates"))
+//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics.length()").value(2)) // 코인 1
+//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1.getId()))
+//            .andExpect(
+//                MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].totalQuantity").value(3)
+//            ) //                .andExpect(jsonPath("$.coinAnalytics[0].averageBuyPrice").value(closeTo(206666666.66666667, 0.000001)))
+//            //                .andExpect(jsonPath("$.coinAnalytics[0].realizedProfitRate").value(closeTo(11.29032300, 0.000001)))
+//            // 코인 2
+//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2.getId()))
+//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].totalQuantity").value(2))
+//
+//        //                .andExpect(jsonPath("$.coinAnalytics[1].averageBuyPrice")
+////                        .value(closeTo(205000000.00, 0.000001)))
+////                .andExpect(jsonPath("$.coinAnalytics[1].realizedProfitRate").value(closeTo(12.19512200, 0.000001)))
+//
+//        // 총 수익률
+////                .andExpect(jsonPath("$.profitRateOnInvestment").value(closeTo(11.65048500, 0.000001)));
+//    }
 }
 

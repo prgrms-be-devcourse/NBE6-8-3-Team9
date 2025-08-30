@@ -51,7 +51,7 @@ data class TradeLogDto(
                 .coin(coin)
                 .type(dto.tradeType)
                 .quantity(dto.quantity)
-                .price(Money.of(dto.price))
+                .price(dto.price?.let { Money.of(it) })
                 .build()
         }
     }

@@ -115,7 +115,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("거래 내역 전체 조회")
     fun t4() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +131,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("거래 내역 필터 조회 - 당일, 모든 거래")
     fun t5() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .param("startDate", "2025-07-25")
@@ -149,7 +149,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("거래 내역 조회 - 일별, 매수 거래")
     fun t6() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .param("startDate", "2025-07-27")
@@ -168,7 +168,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("거래 내역 조회 - 월별, 매도 거래")
     fun t7() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .param("startDate", "2025-07-01")
@@ -187,7 +187,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("시작일이 종료일보다 이후일 때")
     fun t8() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .param("startDate", "2025-03-01")
@@ -205,7 +205,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("모든 필터 없음 (파라미터 없음)")
     fun t9() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .contentType(MediaType.APPLICATION_JSON)
@@ -221,7 +221,7 @@ class TradeLogControllerTest @Autowired constructor(
     @Test
     @DisplayName("거래 없음")
     fun t10() {
-        val url = "/api/tradeLog/wallet/${wallet1!!.id}"
+        val url = "/api/tradeLog/wallet/${wallet1.id}"
 
         val resultActions = mvc.perform(get(url)
             .param("startDate", "1999-01-01")

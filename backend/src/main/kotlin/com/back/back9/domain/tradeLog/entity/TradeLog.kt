@@ -40,7 +40,6 @@ class TradeLog : BaseEntity {
         private set
 
     // 단가
-    @Convert(converter = MoneyConverter::class)
     var price: Money? = null
         private set
 

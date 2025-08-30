@@ -66,11 +66,11 @@ class AnalyticsService(
         // 충전(CHARGE) 로그만 추출하여 총 투자금 계산 (단순 가격 합산)
         val walletLogsTypeCharge: List<TradeLogDto?> = tradeLogService.findByWalletIdAndTypeCharge(walletId)
 
-        val baseInvestment = Money.of(500000000L) // 초기 투자금 (예: 5억 원)
-        val walletLogChargeSum = walletLogsTypeCharge.stream()
-            .map<Money> { log: TradeLogDto? -> Money.of(log!!.price) }  // 각 로그 금액을 Money로 변환
-            .reduce(Money.zero()) { obj: Money?, other: Money? -> obj!!.add(other) }
-        val totalInvested = baseInvestment.add(walletLogChargeSum)
+        val baseInvestment = Money.of(500_000_000L) // 초기 투자금 (예: 5억 원)
+        val walletLogsTypeChargeSum: Money = walletLogsTypeCharge
+            .map { log -> Money.of(log?.price ?: BigDecimal.ZERO) }
+            .fold(Money.zero()) { acc, money -> acc.add(money) }
+        val totalInvested = baseInvestment.add(walletLogsTypeChargeSum)
 
         var totalSellAmountSum = Money.zero() // 전체 매도금액 누적
         var totalRealizedCostSum = Money.zero() // 전체 실현 원가 누적
@@ -88,8 +88,8 @@ class AnalyticsService(
             // 매수/매도 금액 및 수량 계산
             for (log in logs) {
                 // 거래 금액 = 가격 × 수량
-                val tradeAmount = Money.of(log.price).multiply(log.quantity)
-
+                val tradeAmount = Money.of(log.price ?: BigDecimal.ZERO)
+                    .multiply(log.quantity ?: BigDecimal.ZERO)
                 if (log.tradeType == TradeType.BUY) {
                     totalBuyQuantity = totalBuyQuantity.add(log.quantity)
                     totalBuyAmount = totalBuyAmount.add(tradeAmount)
@@ -171,7 +171,10 @@ class AnalyticsService(
     @Transactional(readOnly = true)
     fun calculateUnRealizedProfitRates(walletId: Long): ProfitRateResponse {
         // 사용자 지갑 내 보유 코인 정보 조회 (코인 ID, 수량, 평균 매수가 등 포함)
+        log.info("📌 [START] calculateUnRealizedProfitRates called with walletId={}", walletId)
+
         val coinHoldingInfos = walletService.getCoinHoldingsByUserId(walletId)
+        log.info("👉 조회된 보유 코인 수: {}", coinHoldingInfos.size)
 
         val coinAnalytics: MutableList<ProfitAnalysisDto?> = ArrayList<ProfitAnalysisDto?>()
 
@@ -227,7 +230,7 @@ class AnalyticsService(
             BigDecimal.ZERO
 
         // 현금 포함 자산 정보 조회
-        val walletResponse = walletService.getUserWallet(walletId as Long).getBody()
+        val walletResponse = walletService.getUserWallet(walletId).getBody()
         if (walletResponse == null) {
             throw ErrorException(ErrorCode.WALLET_NOT_FOUND, "null")
         }
