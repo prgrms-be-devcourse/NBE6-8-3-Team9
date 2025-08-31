@@ -29,8 +29,7 @@ open class CoinAmount() : BaseEntity() {
 
     @NotNull
     @Column(name = "total_amount", precision = 19, scale = 8)
-    @Convert(converter = MoneyConverter::class)
-    lateinit var totalAmount: Money
+    var totalAmount: Money = Money.zero()
 
     @Column(name = "updated_at")
     var updatedAt: OffsetDateTime? = null

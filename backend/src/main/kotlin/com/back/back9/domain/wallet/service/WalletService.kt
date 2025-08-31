@@ -83,8 +83,10 @@ class WalletService(
         walletRepository.save(wallet)
 
         val chargeLog = TradeLog.builder()
-            .wallet(wallet).type(TradeType.CHARGE)
-            .quantity(BigDecimal.ONE).price(chargeAmount).build()
+            .wallet(wallet)
+            .type(TradeType.CHARGE)
+            .quantity(BigDecimal.ONE)
+            .price(chargeAmount).build()
         tradeLogRepository.save(chargeLog)
 
         val validCoinAmounts = wallet.coinAmounts.filter(::isValidCoinAmount)
@@ -186,7 +188,8 @@ class WalletService(
         val tradeLog = TradeLog.builder()
             .wallet(wallet).coin(coin)
             .type(if (transactionType == TransactionType.BUY) TradeType.BUY else TradeType.SELL)
-            .quantity(request.quantity).price(txAmount).build()
+            .quantity(request.quantity)
+            .price(txAmount).build()
         tradeLogRepository.save(tradeLog)
 
         val response = WalletResponse.fromWithValidCoinAmounts(wallet, wallet.coinAmounts.filter(::isValidCoinAmount))
