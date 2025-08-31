@@ -13,13 +13,13 @@ import java.time.LocalDateTime
 data class CandleResponseDTO(
     // JSON 필드와 생성자 파라미터를 매핑합니다.
     @param:JsonProperty("timestamp") val timestamp: Long,
-    @param:JsonProperty("candle_date_time_kst") val time: LocalDateTime?,
-    @param:JsonProperty("market") val symbol: String?,
-    @param:JsonProperty("opening_price") val open: BigDecimal?,
-    @param:JsonProperty("high_price") val high: BigDecimal?,
-    @param:JsonProperty("low_price") val low: BigDecimal?,
-    @param:JsonProperty("trade_price") val close: BigDecimal?,
-    @param:JsonProperty("candle_acc_trade_volume") val volume: BigDecimal?
+    @param:JsonProperty("candle_date_time_kst") val time: LocalDateTime,
+    @param:JsonProperty("market") val symbol: String,
+    @param:JsonProperty("opening_price") val open: BigDecimal,
+    @param:JsonProperty("high_price") val high: BigDecimal,
+    @param:JsonProperty("low_price") val low: BigDecimal,
+    @param:JsonProperty("trade_price") val close: BigDecimal,
+    @param:JsonProperty("candle_acc_trade_volume") val volume: BigDecimal
 ) {
     /**
      * 코인 이름은 JSON 역직렬화 이후, 서비스 로직에서 추가로 할당되므로

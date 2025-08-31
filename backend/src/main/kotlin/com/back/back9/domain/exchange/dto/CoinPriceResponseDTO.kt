@@ -9,10 +9,10 @@ import java.time.LocalDateTime
  * data class와 val을 사용하여 불변 객체로 만듭니다.
  */
 data class CoinPriceResponseDTO(
-    val symbol: String?,
+    val symbol: String,
 
     @param:JsonProperty("trade_price")
-    val price: BigDecimal?,
+    val price: BigDecimal,
 
-    val time: LocalDateTime?
+    val time: LocalDateTime
 )
