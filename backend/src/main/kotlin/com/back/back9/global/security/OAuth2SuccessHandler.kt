@@ -47,11 +47,13 @@ class OAuth2SuccessHandler(
         println("액세스 토큰 생성 완료")
         println("사용자 역할: $role")
 
-        if (!walletService.existsByUserId(user.id)) {
-            println("지갑이 존재하지 않아 생성")
-            walletService.createWallet(user.id)
-        } else {
-            println("지갑이 이미 존재함")
+        user.id?.let {
+            if (!walletService.existsByUserId(it)) {
+                println("지갑이 존재하지 않아 생성")
+                walletService.createWallet(user.id!!)
+            } else {
+                println("지갑이 이미 존재함")
+            }
         }
 
         println("=== 쿠키 설정 시작 ===")

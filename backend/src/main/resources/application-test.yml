@@ -43,7 +43,7 @@ logging:
     org.hibernate.orm.jdbc.bind: WARN
     org.hibernate.orm.jdbc.extract: WARN
     org.springframework.transaction.interceptor: WARN
-    root: WARN
+    root: DEBUG
 
 # 테스트용 OAuth2 쿠키 설정
 app:

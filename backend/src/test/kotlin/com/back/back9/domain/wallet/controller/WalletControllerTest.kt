@@ -268,12 +268,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val request = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val request = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/purchase", user.id)
@@ -305,12 +309,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val request = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val request = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/purchase", user.id)
@@ -339,12 +347,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val request = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("-1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val request = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("-1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/purchase", user.id)
@@ -372,12 +384,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val request = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val request = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             val invalidUserId = 999L
 
@@ -413,12 +429,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val buyRequest = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("2000.00"),
-                quantity = BigDecimal("1.0")
-            )
+            val buyRequest = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("2000.00"),
+                        quantity = BigDecimal("1.0")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/purchase", user.id)
@@ -426,12 +446,16 @@ class WalletControllerTest {
                     .content(objectMapper.writeValueAsString(buyRequest))
             ).andExpect(status().isOk)
 
-            val sellRequest = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val sellRequest = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/sell", user.id)
@@ -463,12 +487,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val request = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val request = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/sell", user.id)
@@ -497,12 +525,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val buyRequest = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val buyRequest = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/purchase", user.id)
@@ -510,12 +542,16 @@ class WalletControllerTest {
                     .content(objectMapper.writeValueAsString(buyRequest))
             ).andExpect(status().isOk)
 
-            val sellRequest = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("2000.00"),
-                quantity = BigDecimal("1.0")
-            )
+            val sellRequest = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("2000.00"),
+                        quantity = BigDecimal("1.0")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/sell", user.id)
@@ -544,12 +580,16 @@ class WalletControllerTest {
                 .build()
             walletRepository.save(wallet)
 
-            val request = BuyCoinRequest(
-                coinId = coin.id,
-                walletId = wallet.id,
-                amount = BigDecimal("-1000.00"),
-                quantity = BigDecimal("0.5")
-            )
+            val request = coin.id?.let {
+                wallet.id?.let { walletId ->
+                    BuyCoinRequest(
+                        coinId = it,
+                        walletId = walletId,
+                        amount = BigDecimal("-1000.00"),
+                        quantity = BigDecimal("0.5")
+                    )
+                }
+            }
 
             mockMvc.perform(
                 put("/api/wallets/users/{userId}/sell", user.id)

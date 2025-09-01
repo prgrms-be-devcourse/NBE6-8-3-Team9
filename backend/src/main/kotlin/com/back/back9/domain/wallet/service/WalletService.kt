@@ -102,13 +102,13 @@ class WalletService(
     fun getCoinHoldingsByUserId(userId: Long): List<CoinHoldingInfo> {
         val wallet = walletRepository.findByUserId(userId)
             ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
-        return getCoinHoldingsForProfitCalculation(wallet.id)
+        return getCoinHoldingsForProfitCalculation(wallet.id!!)
     }
 
     private fun isValidCoinAmount(coinAmount: CoinAmount?): Boolean {
         if (coinAmount == null) throw ErrorException(ErrorCode.INVALID_COIN_DATA, "null")
         if (coinAmount.coin == null) throw ErrorException(ErrorCode.INVALID_COIN_DATA, coinAmount.id)
-        if (coinAmount.coin.id <= 0) throw ErrorException(ErrorCode.INVALID_COIN_DATA, coinAmount.id)
+        coinAmount.coin.id?.let { if (it <= 0) throw ErrorException(ErrorCode.INVALID_COIN_DATA, coinAmount.id) }
         if (coinAmount.coin.symbol.isNullOrBlank())
             throw ErrorException(ErrorCode.INVALID_COIN_DATA, coinAmount.id)
         if (coinAmount.totalAmount == null) throw ErrorException(ErrorCode.INVALID_COIN_DATA, coinAmount.id)

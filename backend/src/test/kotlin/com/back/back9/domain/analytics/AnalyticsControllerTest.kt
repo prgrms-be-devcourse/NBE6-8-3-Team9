@@ -4,6 +4,9 @@ import com.back.back9.domain.analytics.controller.AnalyticsController
 import com.back.back9.domain.coin.entity.Coin
 import com.back.back9.domain.coin.repository.CoinRepository
 import com.back.back9.domain.common.vo.money.Money
+import com.back.back9.domain.exchange.dto.CoinPriceResponseDTO
+import com.back.back9.domain.exchange.repository.ExchangeRepository
+import com.back.back9.domain.exchange.service.ExchangeService
 import com.back.back9.domain.tradeLog.entity.TradeLog
 import com.back.back9.domain.tradeLog.entity.TradeType
 import com.back.back9.domain.tradeLog.repository.TradeLogRepository
@@ -18,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -30,7 +34,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDateTime
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 @Tag("trade_log")
 @ActiveProfiles("test")
 @SpringBootTest
@@ -68,6 +73,8 @@ class AnalyticsControllerTest {
     private lateinit var wallet1: Wallet
     private lateinit var wallet2: Wallet
     private lateinit var wallet3: Wallet
+
+    private val log: Logger = LoggerFactory.getLogger(AnalyticsController::class.java)
 
     @BeforeEach
     fun setUp() {
@@ -153,7 +160,7 @@ class AnalyticsControllerTest {
                 .quantity(BigDecimal.ONE)
                 .price(Money.of(100_000_000L + (i * 10_000_000L)))
                 .build()
-            log.setCreatedAt(baseDate.plusDays(((i - 1) * 7).toLong()))
+//            log.setCreatedAt(baseDate.plusDays(((i - 1) * 7).toLong()))
             logs.add(log)
         }
         val log = TradeLog.builder()
@@ -178,7 +185,7 @@ class AnalyticsControllerTest {
                 .price(Money.of(200_000_000L))
                 .build()
 
-            log.setCreatedAt(LocalDateTime.now().minusDays((3 - i).toLong())) // 생성일 세팅
+//            log.setCreatedAt(LocalDateTime.now().minusDays((3 - i).toLong())) // 생성일 세팅
             logs.add(log)
         }
         tradeLogRepository!!.saveAll<TradeLog?>(logs)
@@ -243,7 +250,7 @@ class AnalyticsControllerTest {
     @Test
     @Throws(Exception::class)
     fun t1() {
-        val url = "/api/analytics/wallet/" + wallet1.getId() + "/realized"
+        val url = "/api/analytics/wallet/" + wallet1.id + "/realized"
 
         val resultActions = mockMvc!!
             .perform(MockMvcRequestBuilders.get(url).contentType(MediaType.APPLICATION_JSON))
@@ -253,47 +260,48 @@ class AnalyticsControllerTest {
             .andExpect(MockMvcResultMatchers.handler().handlerType(AnalyticsController::class.java))
             .andExpect(MockMvcResultMatchers.handler().methodName("calculateRealizedProfitRates"))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics.length()").value(2))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1.getId()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1.id))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].totalQuantity").value(3))
             .andExpect(
                 MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].averageBuyPrice").value(165000000.0)
             ) //                .andExpect(jsonPath("$.coinAnalytics[0].realizedProfitRate").value(closeTo(9.09090900, 0.000001)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2.getId()))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2.id))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].totalQuantity").value(2))
             .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].averageBuyPrice").value(190000000.0))
         //                .andExpect(jsonPath("$.coinAnalytics[1].realizedProfitRate").value(closeTo(7.89473600, 0.000001)))
 //                .andExpect(jsonPath("$.profitRateOnInvestment").value(closeTo(6.81818100, 0.000001)));
     }
 
-//    @DisplayName("유저 평가 수익률 계산 API - 성공")
-//    @Test
-//    @Throws(Exception::class)
-//    fun t2() {
-//        val url = "/api/analytics/wallet/" + wallet1.getId() + "/unrealized"
-//
-//        val resultActions = mockMvc!!
-//            .perform(MockMvcRequestBuilders.get(url).contentType(MediaType.APPLICATION_JSON))
-//            .andDo(MockMvcResultHandlers.print())
-//        resultActions
-//            .andExpect(MockMvcResultMatchers.status().isOk())
-//            .andExpect(MockMvcResultMatchers.handler().handlerType(AnalyticsController::class.java))
-//            .andExpect(MockMvcResultMatchers.handler().methodName("calculateUnRealizedProfitRates"))
-//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics.length()").value(2)) // 코인 1
-//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1.getId()))
-//            .andExpect(
-//                MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].totalQuantity").value(3)
-//            ) //                .andExpect(jsonPath("$.coinAnalytics[0].averageBuyPrice").value(closeTo(206666666.66666667, 0.000001)))
-//            //                .andExpect(jsonPath("$.coinAnalytics[0].realizedProfitRate").value(closeTo(11.29032300, 0.000001)))
-//            // 코인 2
-//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2.getId()))
-//            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].totalQuantity").value(2))
-//
-//        //                .andExpect(jsonPath("$.coinAnalytics[1].averageBuyPrice")
-////                        .value(closeTo(205000000.00, 0.000001)))
-////                .andExpect(jsonPath("$.coinAnalytics[1].realizedProfitRate").value(closeTo(12.19512200, 0.000001)))
-//
-//        // 총 수익률
-////                .andExpect(jsonPath("$.profitRateOnInvestment").value(closeTo(11.65048500, 0.000001)));
-//    }
+    @DisplayName("유저 평가 수익률 계산 API - 성공")
+    @Test
+    @Throws(Exception::class)
+    fun t2() {
+        log.debug("wallet1 id = {}", wallet1.id)
+        val url = "/api/analytics/wallet/" + wallet1.id + "/unrealized"
+
+        val resultActions = mockMvc!!
+            .perform(MockMvcRequestBuilders.get(url).contentType(MediaType.APPLICATION_JSON))
+            .andDo(MockMvcResultHandlers.print())
+        resultActions
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.handler().handlerType(AnalyticsController::class.java))
+            .andExpect(MockMvcResultMatchers.handler().methodName("calculateUnRealizedProfitRates"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics.length()").value(2)) // 코인 1
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].coinName").value(coin1.id))
+            .andExpect(
+                MockMvcResultMatchers.jsonPath("$.coinAnalytics[0].totalQuantity").value(3)
+            ) //                .andExpect(jsonPath("$.coinAnalytics[0].averageBuyPrice").value(closeTo(206666666.66666667, 0.000001)))
+            //                .andExpect(jsonPath("$.coinAnalytics[0].realizedProfitRate").value(closeTo(11.29032300, 0.000001)))
+            // 코인 2
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].coinName").value(coin2.id))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.coinAnalytics[1].totalQuantity").value(2))
+
+        //                .andExpect(jsonPath("$.coinAnalytics[1].averageBuyPrice")
+//                        .value(closeTo(205000000.00, 0.000001)))
+//                .andExpect(jsonPath("$.coinAnalytics[1].realizedProfitRate").value(closeTo(12.19512200, 0.000001)))
+
+        // 총 수익률
+//                .andExpect(jsonPath("$.profitRateOnInvestment").value(closeTo(11.65048500, 0.000001)));
+    }
 }
 

@@ -85,7 +85,7 @@ class TradeLogServiceTest {
 
         val saved = tradeLogService!!.save(tradeLog)
 
-        Assertions.assertNotNull(saved.getId())
-        Assertions.assertEquals(wallet!!.getId(), saved.wallet!!.getId())
+        Assertions.assertNotNull(saved.id)
+        Assertions.assertEquals(wallet!!.id, saved.wallet!!.id)
     }
 }

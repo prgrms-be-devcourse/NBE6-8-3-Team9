@@ -38,8 +38,8 @@ class TradeLogService(
         val wallet = walletRepository.findByUserId(userId)
             ?: throw ErrorException(ErrorCode.WALLET_NOT_FOUND, userId)
 
-        return tradeLogRepository.findByWalletId(wallet.getId())
-            .map { from(it) }
+        return wallet.id?.let { tradeLogRepository.findByWalletId(it) }
+            ?.map { from(it) } ?: emptyList()
 
     }
 

@@ -4,7 +4,7 @@ import com.back.back9.domain.wallet.entity.CoinAmount
 import java.math.BigDecimal
 
 data class CoinAmountResponse(
-    val coinId: Long,
+    val coinId: Long?,
     val coinSymbol: String,
     val coinName: String,
     val quantity: BigDecimal,
