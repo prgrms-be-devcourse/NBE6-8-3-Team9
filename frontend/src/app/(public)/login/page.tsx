@@ -29,7 +29,7 @@ export default function LoginPage() {
         const checkAlreadyLoggedIn = async () => {
             try {
                 // API 클라이언트를 사용하여 일관된 URL과 설정으로 인증 확인
-                const response = await apiCall('/v1/users/me');
+                const response = await apiCall('/api/v1/users/me');
 
                 if (response) {
                     // 이미 로그인되어 있으면 대시보드로 리다이렉트
@@ -93,7 +93,7 @@ export default function LoginPage() {
             console.log('로그인 시도:', values.userLoginId);
 
             // API 클라이언트를 사용하여 일관된 설정으로 로그인 요청
-            const data = await apiCall<any>('/v1/users/login', {
+            const data = await apiCall<any>('/api/v1/users/login', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
@@ -225,4 +225,3 @@ export default function LoginPage() {
         </div>
     );
 }
-

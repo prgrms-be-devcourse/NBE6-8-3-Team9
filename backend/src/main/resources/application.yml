@@ -31,9 +31,12 @@ custom:
 # OAuth2 쿠키 설정 기본값
 app:
   oauth2:
+    frontend-url: http://localhost:3000
     cookie-domain: ${OAUTH2_COOKIE_DOMAIN:}
   cookie:
     same-site: Lax
     secure: true
     domain: ""
     max-age-seconds: 31536000
+
+

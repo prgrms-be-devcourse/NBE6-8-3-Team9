@@ -1,5 +1,5 @@
 import { apiCall } from './client'
-import type { ApiResponse } from '@/lib/types/common'
+import type { ApiResponse } from '@/lib/types/user'
 import type { userRegisterDto, userLoginReqBody, userLoginResBody } from '@/lib/types/user'
 
 export const authApi = {

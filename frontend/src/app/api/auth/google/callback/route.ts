@@ -17,10 +17,15 @@ export async function GET(request: NextRequest) {
     console.log('error:', error || 'null');
 
     // 환경별 기본 URL 설정
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL ||
+    let baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL ||
         (process.env.NODE_ENV === 'production'
             ? 'https://peuronteuendeu.onrender.com'
-            : 'http://localhost:8888');  // 로컬에서는 nginx 포트 사용
+            : `http://localhost:${process.env.PORT || 3000}`); // 동적으로 포트 사용
+
+    // window.location.port가 있으면 그걸 우선 사용 (Next.js Edge API Route에서는 window는 undefined지만, fallback)
+    if (typeof window !== 'undefined' && window.location && window.location.port) {
+        baseUrl = `http://localhost:${window.location.port}`;
+    }
 
     if (error) {
         console.log('OAuth 에러 발생, 로그인 페이지로 리다이렉트');
