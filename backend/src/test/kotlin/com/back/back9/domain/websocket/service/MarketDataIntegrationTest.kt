@@ -43,6 +43,10 @@ class MarketDataIntegrationTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var webClient: WebClient
 
+    /**
+     * 모든 테스트가 시작되기 전, 단 한 번만 실행됩니다.
+     * 외부 API(Upbit) 호출을 대체할 MockWebServer를 설정하고 시작합니다.
+     */
     @BeforeAll
     fun setupServer() {
         mockWebServer = MockWebServer()
@@ -53,20 +57,30 @@ class MarketDataIntegrationTest {
         restService.setWebClientForTest(webClient)
     }
 
+    /**
+     * 모든 테스트가 끝난 후, 단 한 번만 실행됩니다.
+     * 사용했던 MockWebServer를 종료합니다.
+     */
     @AfterAll
     fun tearDownServer() {
         mockWebServer.shutdown()
     }
 
+    /**
+     * 각 테스트 메서드가 실행되기 전에 항상 실행됩니다.
+     * DB와 Redis의 데이터를 모두 삭제하여 각 테스트가 독립적인 환경에서 실행되도록 보장합니다.
+     */
     @BeforeEach
     fun setUp() {
-        // DB 초기화
         coinRepository.deleteAll()
-        // Redis 초기화
         redisService.clearAll()
         waitForRedisClear()
     }
 
+    /**
+     * 테스트 1: 초기 상태에서 특정 코인(BTC)을 DB에 저장하고,
+     * Mock API로부터 해당 코인의 캔들 데이터를 받아와 Redis에 정상적으로 저장되는지 검증합니다.
+     */
     @Test
     @DisplayName("1. 초기 데이터 세팅")
     fun testInitialDataSetup() {
@@ -80,10 +94,15 @@ class MarketDataIntegrationTest {
         val saved = restService.fetchInterval(CandleInterval.MIN_1, 1)
         assertThat(saved).isEqualTo(1)
 
-        val btcNode: JsonNode = objectMapper.readTree(waitForRedisValue(CandleInterval.MIN_1.redisKey("KRW-BTC")).last())
+        val latestCandleJson = waitForRedisZSetValue(CandleInterval.MIN_1.redisKey("KRW-BTC")).first()
+        val btcNode: JsonNode = objectMapper.readTree(latestCandleJson)
         assertThat(btcNode.get("trade_price").asDouble()).isCloseTo(70050000.0, Offset.offset(0.01))
     }
 
+    /**
+     * 테스트 2: DB에 코인이 순차적으로 추가될 때,
+     * 코인 목록을 제공하는 CoinListProvider가 변경 사항을 올바르게 감지하고 캐시를 갱신하는지 확인합니다.
+     */
     @Test
     @DisplayName("2. 코인 목록 변화 감지")
     fun testCoinListChangeDetection() {
@@ -99,6 +118,10 @@ class MarketDataIntegrationTest {
         assertThat(marketCodes).containsExactlyInAnyOrder("KRW-BTC", "KRW-ETH")
     }
 
+    /**
+     * 테스트 3: 기존 코인이 삭제되고 새로운 심볼의 코인이 추가되는 시나리오(사실상 이름/심볼 변경)에서,
+     * CoinListProvider가 이를 인지하고 새로운 심볼에 대한 데이터만 정상적으로 수집하는지 검증합니다.
+     */
     @Test
     @DisplayName("3. 코인 이름/심볼 수정")
     fun testCoinRename() {
@@ -117,12 +140,15 @@ class MarketDataIntegrationTest {
         val saved = restService.fetchInterval(CandleInterval.MIN_1, 1)
         assertThat(saved).isEqualTo(1)
 
-        // 기존 데이터 삭제 확인
-        assertThat(redisTemplate.hasKey(CandleInterval.MIN_1.redisKey("KRW-BTC"))).isFalse
-        val btcNewNode: JsonNode = objectMapper.readTree(waitForRedisValue(CandleInterval.MIN_1.redisKey("KRW-BTC-NEW")).last())
+        val latestCandleJson = waitForRedisZSetValue(CandleInterval.MIN_1.redisKey("KRW-BTC-NEW")).first()
+        val btcNewNode: JsonNode = objectMapper.readTree(latestCandleJson)
         assertThat(btcNewNode.get("trade_price").asDouble()).isCloseTo(71050000.0, Offset.offset(0.01))
     }
 
+    /**
+     * 테스트 4: DB에서 코인이 삭제되었을 때,
+     * CoinListProvider가 이를 감지하여 내부 코인 목록을 비우는지 확인합니다.
+     */
     @Test
     @DisplayName("4. 코인 목록 삭제")
     fun testCoinDeletion() {
@@ -137,6 +163,10 @@ class MarketDataIntegrationTest {
         assertThat(redisTemplate.keys("*")).isEmpty()
     }
 
+    /**
+     * 테스트 5: 새로운 코인(ETH)이 DB에 추가되었을 때, 해당 코인이 CoinListProvider에 의해 인식되고,
+     * 이 신규 코인에 대한 캔들 데이터를 API로부터 정상적으로 가져와 Redis에 저장할 수 있는지 검증합니다.
+     */
     @Test
     @DisplayName("5. 신규 코인 추가")
     fun testCoinAddition() {
@@ -150,20 +180,29 @@ class MarketDataIntegrationTest {
         val saved = restService.fetchInterval(CandleInterval.MIN_1, 1)
         assertThat(saved).isEqualTo(1)
 
-        val ethNode: JsonNode = objectMapper.readTree(waitForRedisValue(CandleInterval.MIN_1.redisKey("KRW-ETH")).last())
+        val latestCandleJson = waitForRedisZSetValue(CandleInterval.MIN_1.redisKey("KRW-ETH")).first()
+        val ethNode: JsonNode = objectMapper.readTree(latestCandleJson)
         assertThat(ethNode.get("trade_price").asDouble()).isCloseTo(3005000.0, Offset.offset(0.01))
     }
 
-    private fun waitForRedisValue(key: String, expectedCount: Int = 1, timeoutMs: Long = 5000): List<String> {
+    /**
+     * 헬퍼 메서드: 비동기적으로 처리되는 Redis 저장을 기다립니다.
+     * Sorted Set(ZSet)에서 키가 나타나고, 예상 개수만큼 데이터가 쌓일 때까지 최대 5초간 대기합니다.
+     */
+    private fun waitForRedisZSetValue(key: String, expectedCount: Int = 1, timeoutMs: Long = 5000): List<String> {
         val start = System.currentTimeMillis()
         while (System.currentTimeMillis() - start < timeoutMs) {
-            val list = redisTemplate.opsForList().range(key, 0, -1)
-            if (!list.isNullOrEmpty() && list.size >= expectedCount) return list
+            val set = redisTemplate.opsForZSet().reverseRange(key, 0, -1)
+            if (!set.isNullOrEmpty() && set.size >= expectedCount) return set.toList()
             Thread.sleep(50)
         }
-        throw AssertionError("Redis key $key did not receive $expectedCount value(s) within $timeoutMs ms")
+        throw AssertionError("Redis key $key did not receive $expectedCount value(s) in ZSET within $timeoutMs ms")
     }
 
+    /**
+     * 헬퍼 메서드: Redis의 모든 키가 삭제될 때까지 최대 2초간 대기합니다.
+     * @BeforeEach에서 clearAll() 호출 후 확실한 초기화를 위해 사용됩니다.
+     */
     private fun waitForRedisClear(timeoutMs: Long = 2000) {
         val start = System.currentTimeMillis()
         while (System.currentTimeMillis() - start < timeoutMs) {

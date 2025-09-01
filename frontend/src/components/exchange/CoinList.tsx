@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { ExchangeDTO } from "@/lib/types/exchange/type";
-import { exchangeApi } from "@/lib/api/exchange";
 import Link from "next/link";
 import {apiCall} from "@/lib/api/client";
 import { FiSettings } from "react-icons/fi";
@@ -11,6 +10,7 @@ type SortKey = "name" | "trade_price" | "change_rate" | "candle_acc_trade_volume
 type SortOrder = "asc" | "desc";
 
 interface CoinListProps {
+    initialCoins: ExchangeDTO[];
     onSelect?: (symbol: string, coin: ExchangeDTO) => void;
 }
 
@@ -19,8 +19,8 @@ interface FilteredCoin extends ExchangeDTO {
     change_rate: number;
 }
 
-export const CoinList = ({ onSelect }: CoinListProps) => {
-    const [coin, setCoin] = useState<ExchangeDTO[]>([]);
+export const CoinList = ({ initialCoins, onSelect }: CoinListProps) => {
+    const [coin, setCoin] = useState<ExchangeDTO[]>(initialCoins);
     const [search, setSearch] = useState("");
     const [sortKey, setSortKey] = useState<SortKey>("trade_price");
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -40,67 +40,57 @@ export const CoinList = ({ onSelect }: CoinListProps) => {
                 console.error("사용자 정보를 불러오는 데 실패했습니다.", error);
             }
         };
-
         fetchUser();
     }, []);
 
     useEffect(() => {
-        const fetchCoins = async () => {
-            try {
-                const data = await exchangeApi.getLatest();
-                setCoin(data);
+        if (initialCoins.length === 0) return;
 
-                const markets = data.map((c) => c.market);
+        const markets = initialCoins.map((c) => c.market);
 
-                const ws = new WebSocket("wss://api.upbit.com/websocket/v1");
-                socketRef.current = ws;
+        const ws = new WebSocket("wss://api.upbit.com/websocket/v1");
+        socketRef.current = ws;
 
-                ws.onopen = () => {
-                    ws.send(
-                        JSON.stringify([
-                            { ticket: "coin-list" },
-                            {
-                                type: "candle.1s",
-                                codes: markets,
-                                isOnlyRealtime: true,
-                            },
-                        ])
-                    );
-                };
-
-                ws.onmessage = async (event) => {
-                    const blob = event.data as Blob;
-                    const text = await blob.text();
-                    const data = JSON.parse(text);
-
-                    if (!data || !data.code) return;
-
-                    setCoin((prevCoins) =>
-                        prevCoins.map((c) =>
-                            c.market === data.code
-                                ? {
-                                    ...c,
-                                    trade_price: data.trade_price,
-                                    opening_price: data.opening_price,
-                                    high_price: data.high_price,
-                                    low_price: data.low_price,
-                                    candle_acc_trade_volume: data.candle_acc_trade_volume,
-                                }
-                                : c
-                        )
-                    );
-                };
-            } catch (error) {
-                console.error("코인 데이터를 불러오는 데 실패했습니다.", error);
-            }
+        ws.onopen = () => {
+            ws.send(
+                JSON.stringify([
+                    { ticket: "coin-list" },
+                    {
+                        type: "candle.1s",
+                        codes: markets,
+                        isOnlyRealtime: true,
+                    },
+                ])
+            );
         };
 
-        fetchCoins();
+        ws.onmessage = async (event) => {
+            const blob = event.data as Blob;
+            const text = await blob.text();
+            const data = JSON.parse(text);
+
+            if (!data || !data.code) return;
+
+            setCoin((prevCoins) =>
+                prevCoins.map((c) =>
+                    c.market === data.code
+                        ? {
+                            ...c,
+                            trade_price: data.trade_price,
+                            opening_price: data.opening_price,
+                            high_price: data.high_price,
+                            low_price: data.low_price,
+                            candle_acc_trade_volume: data.candle_acc_trade_volume,
+                        }
+                        : c
+                )
+            );
+        };
 
         return () => {
             socketRef.current?.close();
         };
-    }, []);
+    }, [initialCoins]);
 
     // 기본 선택 코인 설정 (KRW-BTC)
     useEffect(() => {
@@ -109,6 +99,9 @@ export const CoinList = ({ onSelect }: CoinListProps) => {
             if (btc) {
                 setSelectedMarket(btc.market);
                 setLatestSelectedCoin(btc);
+            } else {
+                setSelectedMarket(coin[0].market);
+                setLatestSelectedCoin(coin[0]);
             }
         }
     }, [coin, selectedMarket]);
@@ -128,7 +121,8 @@ export const CoinList = ({ onSelect }: CoinListProps) => {
         if (latestSelectedCoin && selectedMarket) {
             onSelect?.(selectedMarket, latestSelectedCoin);
         }
-    }, [latestSelectedCoin, selectedMarket]);
+    }, [latestSelectedCoin, selectedMarket, onSelect]);
+
 
     const filtered: FilteredCoin[] = coin
         .filter((coin) => {
