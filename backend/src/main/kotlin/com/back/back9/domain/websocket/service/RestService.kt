@@ -15,7 +15,6 @@ import kotlin.math.min
 @Service
 class RestService(
     private val redisService: RedisService,
-    private val coinListProvider: DatabaseCoinListProvider,
     webClientBuilder: WebClient.Builder,
     private val mapper: ObjectMapper
 ) {
@@ -24,48 +23,40 @@ class RestService(
         .baseUrl("https://api.upbit.com/v1")
         .build()
 
-    fun fetchInterval(interval: CandleInterval, count: Int): Int {
-        val markets: List<String> = coinListProvider.getMarketCodes()
+    // fetchUntil 메소드를 fetchUntilForMarkets로 변경하고 markets를 파라미터로 받도록 수정합니다.
+    fun fetchUntilForMarkets(interval: CandleInterval, requiredSize: Int, markets: List<String>): Int {
         var totalSaved = 0
-
         markets.forEach { market ->
-            var i = 0
-            while (i < count) {
-                val size = min(CandleFetchParameters.MAX_API_REQUEST_COUNT, count - i)
-                val uri = "/candles/${interval.suffix}?market=$market&count=$size"
-
-                runCatching {
-                    val json = getWith429Backoff(uri)
-                    val array: JsonNode = mapper.readTree(json)
-
-                    val saved = saveCandleArray(interval, market, array)
-                    totalSaved += saved
-
-                    if (interval == CandleInterval.SEC && i == 0 && array.isArray && array.size() > 0) {
-                        saveLatestCandle(market, array.get(0))
-                    }
-                    i += CandleFetchParameters.MAX_API_REQUEST_COUNT
-                }.onFailure { e ->
-                    val message = e.message ?: "unknown"
-                    log.error("❌ [${interval}::${market}] 데이터 수집 실패: $message", e)
-                    i += CandleFetchParameters.MAX_API_REQUEST_COUNT
-                }
+            val currentCount = redisService.countCandles(interval.redisKey(market))
+            if (currentCount < requiredSize) {
+                val toFetch = (requiredSize - currentCount).toInt()
+                totalSaved += fetchIntervalForMarket(interval, toFetch, market)
             }
         }
-        log.info("✅ [interval:${interval.name}] 데이터 $totalSaved 개 저장 완료.")
         return totalSaved
     }
 
-    fun fetchUntil(interval: CandleInterval, requiredSize: Int): Int {
-        var total = 0
-        coinListProvider.getMarketCodes().forEach { market ->
-            val current = redisService.countCandles(interval.redisKey(market))
-            if (current < requiredSize) {
-                val toFetch = requiredSize - current
-                total += fetchInterval(interval, toFetch.toInt())
+    // ... 이하 나머지 코드는 이전과 동일 ...
+    private fun fetchIntervalForMarket(interval: CandleInterval, count: Int, market: String): Int {
+        var savedCount = 0
+        var fetchedCount = 0
+        while (fetchedCount < count) {
+            val requestSize = min(CandleFetchParameters.MAX_API_REQUEST_COUNT, count - fetchedCount)
+            if (requestSize <= 0) break
+
+            val uri = "/candles/${interval.suffix}?market=$market&count=$requestSize"
+
+            runCatching {
+                val json = getWith429Backoff(uri)
+                val array: JsonNode = mapper.readTree(json)
+                savedCount += saveCandleArray(interval, market, array)
+            }.onFailure { e ->
+                log.error("❌ [${interval.name}::$market] 데이터 수집 실패: ${e.message}", e)
             }
+            fetchedCount += requestSize
+            Thread.sleep(110)
         }
-        return total
+        return savedCount
     }
 
     private fun getWith429Backoff(uri: String): String {
@@ -74,10 +65,6 @@ class RestService(
             .retrieve()
             .bodyToMono<String>()
             .block() ?: ""
-    }
-
-    fun setWebClientForTest(client: WebClient) {
-        this.webClient = client
     }
 
     private fun saveCandleArray(interval: CandleInterval, market: String, array: JsonNode): Int {
@@ -89,19 +76,14 @@ class RestService(
                     redisService.saveCandle(interval.redisKey(market), candle)
                     saved++
                 }.onFailure { e ->
-                    log.error(" individual candle node parsing failed: $node", e)
+                    log.error("개별 캔들 노드 파싱 실패: $node", e)
                 }
             }
         }
         return saved
     }
 
-    private fun saveLatestCandle(market: String, node: JsonNode) {
-        runCatching {
-            val candle = mapper.treeToValue(node, Candle::class.java)
-            redisService.saveLatestCandle(market, candle)
-        }.onFailure { e ->
-            log.error("latest candle node parsing failed: $node", e)
-        }
+    fun setWebClientForTest(client: WebClient) {
+        this.webClient = client
     }
 }

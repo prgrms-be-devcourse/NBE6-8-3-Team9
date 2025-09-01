@@ -6,16 +6,11 @@ package com.back.back9.domain.websocket.vo
 enum class CandleInterval(val suffix: String, val webSocketType: String) {
     SEC("minutes/1", "candle.1s"),
     MIN_1("minutes/1", "candle.1m"),
-    MIN_3("minutes/3", ""),
-    MIN_5("minutes/5", ""),
-    MIN_10("minutes/10", ""),
-    MIN_15("minutes/15", ""),
-    MIN_30("minutes/30", ""),
-    HOUR_1("minutes/60", ""),
-    HOUR_4("minutes/240", ""),
-    DAY("days", ""),
-    WEEK("weeks", ""),
-    MONTH("months", "");
+    MIN_30("minutes/30", "candle.30m"),
+    HOUR_1("minutes/60", "candle.60m"),
+    DAY("days", "days"),
+    WEEK("weeks", "weeks"),
+    MONTH("months", "months");
 
     /**
      * Redis 저장을 위한 고유 키를 생성합니다. (예: "CANDLE:MIN_1:KRW-BTC")
