@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fadeInUp } from "@/lib/motion";
 import { authApi } from "@/lib/api/auth";
-import type { userRegisterDto } from '@/lib/types/user';
+import type { ApiResponse } from '@/lib/types/user';
 
 const schema = z.object({
     userLoginId: z.string().min(1, "아이디를 입력해주세요."),
@@ -59,7 +59,7 @@ export default function RegisterPage() {
         setError(null);
 
         try {
-            const data = await authApi.register({
+            const data: ApiResponse<any> = await authApi.register({
                 userLoginId: values.userLoginId,
                 password: values.password,
                 confirmPassword: values.confirmPassword,
