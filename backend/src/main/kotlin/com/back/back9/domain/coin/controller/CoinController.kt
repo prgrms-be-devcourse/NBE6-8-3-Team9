@@ -5,7 +5,6 @@ import com.back.back9.domain.coin.dto.CoinDto
 import com.back.back9.domain.coin.service.CoinService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -24,7 +23,6 @@ class CoinController(
 
     // 코인 단건 조회 (GET)
     @GetMapping("/{id}")
-    @Transactional
     fun getCoin(@PathVariable id: Long): ResponseEntity<CoinDto> {
         val coin = coinService.findById(id)
         return ResponseEntity.ok(CoinDto(coin))
@@ -32,7 +30,6 @@ class CoinController(
 
     // 코인 삭제 (DELETE)
     @DeleteMapping("/{id}")
-    @Transactional
     fun deleteCoin(@PathVariable id: Long): ResponseEntity<String> {
         val coin = coinService.findById(id)
         coinService.delete(coin)
@@ -43,7 +40,6 @@ class CoinController(
 
     // 코인 추가 (POST)
     @PostMapping
-    @Transactional
     fun addCoin(@RequestBody reqBody: @Valid CoinAddRequest): ResponseEntity<CoinDto> {
         val coin = coinService.add(reqBody.symbol, reqBody.koreanName, reqBody.englishName)
 
@@ -52,12 +48,11 @@ class CoinController(
 
     // 코인 수정 (PUT)
     @PutMapping("/{id}")
-    @Transactional
     fun modifyCoin(
         @PathVariable id: Long,
         @RequestBody reqBody: CoinAddRequest
     ): ResponseEntity<String> {
-        val coin = coinService!!.findById(id)
+        val coin = coinService.findById(id)
 
         coinService.modify(coin, reqBody.symbol, reqBody.koreanName, reqBody.englishName)
 
