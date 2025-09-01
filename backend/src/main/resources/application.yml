@@ -18,6 +18,9 @@ spring:
         format_sql: true
         highlight_sql: true
 
+  http:
+    encoding: { }
+
 # JWT 공통 설정 (환경별로 기본값 제공)
 custom:
   jwt:
@@ -34,4 +37,3 @@ app:
     secure: true
     domain: ""
     max-age-seconds: 31536000
-

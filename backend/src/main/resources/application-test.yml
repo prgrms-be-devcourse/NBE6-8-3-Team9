@@ -19,6 +19,9 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
+  http:
+    encoding: {}
+
   security:
     oauth2:
       client:
