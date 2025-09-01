@@ -14,6 +14,9 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException
 import org.springframework.security.oauth2.core.OAuth2Error
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import org.springframework.web.filter.CorsFilter
 
 @Configuration
 class SecurityConfig(
@@ -23,13 +26,28 @@ class SecurityConfig(
 ) {
 
     @Bean
+    fun corsConfigurationSource(): UrlBasedCorsConfigurationSource {
+        val config = CorsConfiguration()
+        config.allowCredentials = true
+        config.addAllowedOrigin("http://localhost:3000") // 개발 환경에서만 허용, 운영 시 실제 프론트 주소로 변경
+        // config.addAllowedOrigin("https://peuronteuendeu.onrender.com") // 운영 환경 예시
+        config.addAllowedHeader("*")
+        config.addAllowedMethod("*")
+        config.addExposedHeader("Set-Cookie")
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", config)
+        return source
+    }
+
+    @Bean
     fun securityFilterChain(
             http: HttpSecurity,
             customOAuth2UserService: CustomOAuth2UserService
     ): SecurityFilterChain {
         http
                 .csrf { it.disable() }
-            .cors(Customizer.withDefaults())
+            .cors { it.configurationSource(corsConfigurationSource()) }
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
             it.requestMatchers(
@@ -46,7 +64,7 @@ class SecurityConfig(
             .exceptionHandling {
             it.authenticationEntryPoint { _, response, _ ->
                     response.status = HttpServletResponse.SC_UNAUTHORIZED
-                response.contentType = "application/json"
+                response.contentType = "application/json; charset=UTF-8"
                 response.writer.write(
                         """{"status":"fail","code":401,"message":"인증이 필요합니다.","result":null}"""
                 )
@@ -73,7 +91,7 @@ class SecurityConfig(
                     ex.message ?: "Unknown error"
                 }
                 res.status = HttpServletResponse.SC_UNAUTHORIZED
-                res.contentType = "application/json"
+                res.contentType = "application/json; charset=UTF-8"
                 res.writer.write(
                         """{"status":"fail","code":401,"message":"${errorMsg.replace("\"", "\\\"")}"}"""
                 )

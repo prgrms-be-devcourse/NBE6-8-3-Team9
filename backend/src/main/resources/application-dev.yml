@@ -18,6 +18,9 @@ spring:
     hibernate:
       ddl-auto: update
 
+  http:
+    encoding: {}
+
   security:
     oauth2:
       client:

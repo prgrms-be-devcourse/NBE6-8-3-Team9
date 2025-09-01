@@ -12,7 +12,8 @@ class WebMvcConfig : WebMvcConfigurer {
                         "https://cdpn.io",
                         "http://localhost:8888",
                         "https://peuronteuendeu.onrender.com",
-                        "http://localhost:3000"
+                        "http://localhost:3000",
+                        "http://localhost:8000"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")

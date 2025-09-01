@@ -15,8 +15,9 @@ const API_BASE_URL =
 
 // 안전한 URL 결합
 function joinUrl(base: string, endpoint: string) {
+    // endpoint가 /api로 시작하지 않으면 자동으로 /api prefix 추가
+    let e = endpoint.startsWith("/api/") ? endpoint : `/api${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
     const b = base.endsWith("/") ? base.slice(0, -1) : base;
-    const e = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     return `${b}${e}`;
 }
 
@@ -49,11 +50,21 @@ export async function apiCall<T>(
         try {
             errorData = await response.json();
         } catch {
-            errorData = {
-                status: response.status,
-                code: `${response.status}-ERROR`,
-                message: response.statusText || "서버 오류가 발생했습니다.",
-            };
+            // response.json() 파싱 실패 시, text로 한 번 더 시도 (한글 깨짐 디버깅)
+            try {
+                const text = await response.text();
+                errorData = {
+                    status: response.status,
+                    code: `${response.status}-ERROR`,
+                    message: text || response.statusText || "서버 오류가 발생했습니다.",
+                };
+            } catch {
+                errorData = {
+                    status: response.status,
+                    code: `${response.status}-ERROR`,
+                    message: response.statusText || "서버 오류가 발생했습니다.",
+                };
+            }
         }
 
         const error = new Error(errorData.message) as Error & ErrorResponse;

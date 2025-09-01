@@ -54,9 +54,12 @@ class UserController(
                         reqBody.confirmPassword
                 )
         )
+        log.info("회원가입 결과: {}", registerResult)
         if (!registerResult.resultCode.startsWith("200")) {
+            log.warn("회원가입 실패: {}", registerResult)
             return RsData(registerResult.resultCode, registerResult.msg)
         }
+        log.info("회원가입 성공: {}", registerResult.data)
         return RsData("201", registerResult.msg, UserDto.from(registerResult.data!!))
     }
 
@@ -95,18 +98,23 @@ class UserController(
     fun login(@Valid @RequestBody reqBody: UserLoginReqBody): RsData<UserLoginResBody> {
         val actor = rq.getActor()
         val apiKeyCookie = rq.getCookieValue("apiKey", null)
+        log.info("로그인 요청: userLoginId={}, actor={}, apiKeyCookie={}", reqBody.userLoginId, actor, apiKeyCookie)
         if (actor != null || (apiKeyCookie != null && userService.findByApiKey(apiKeyCookie) != null)) {
+            log.warn("이미 로그인된 상태입니다. actor={}, apiKeyCookie={}", actor, apiKeyCookie)
             return RsData("400", "이미 로그인된 상태입니다.")
         }
 
         val loginResult = userService.login(reqBody.userLoginId, reqBody.password)
+        log.info("로그인 결과: {}", loginResult)
         if (!loginResult.resultCode.startsWith("200")) {
+            log.warn("로그인 실패: {}", loginResult)
             return RsData(loginResult.resultCode, loginResult.msg)
         }
 
         val user = loginResult.data!!
-                val accessToken = userService.genAccessToken(user)
+        val accessToken = userService.genAccessToken(user)
 
+        log.info("쿠키 세팅: apiKey={}, accessToken={}, role={}", user.apiKey, accessToken, user.role.name)
         rq.setCookie("apiKey", user.apiKey)
         rq.setCookie("accessToken", accessToken)
         rq.setCookie("role", user.role.name)
@@ -167,9 +175,12 @@ class UserController(
     @Operation(summary = "내 정보 조회")
     fun me(): RsData<UserDto> {
         val actor = rq.getActor()
+        log.info("내 정보 조회 요청: actor={}", actor)
         if (actor == null) {
+            log.warn("로그인 필요: actor=null")
             return RsData("401", "로그인이 필요합니다.")
         }
+        log.info("내 정보 조회 성공: {}", actor)
         return RsData("200", "현재 사용자 정보입니다.", UserDto.from(actor))
     }
 }
