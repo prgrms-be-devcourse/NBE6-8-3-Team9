@@ -59,15 +59,20 @@ export default function RegisterPage() {
         setError(null);
 
         try {
-            const data: ApiResponse<any> = await authApi.register({
+            const data = await authApi.register({
                 userLoginId: values.userLoginId,
                 password: values.password,
                 confirmPassword: values.confirmPassword,
                 username: values.username,
             });
 
+            if (!data) {
+                setError("서버 응답이 없습니다.");
+                return;
+            }
+
             // 백엔드가 200으로 응답해도 code/status로 실패 분기
-            if (data && (data.code >= 400 || data.status === 'fail')) {
+            if (data.code >= 400 || data.status === 'fail') {
                 if (data.message?.includes('아이디') || data.message?.includes('ID')) {
                     form.setError("userLoginId", {
                         type: "server",
