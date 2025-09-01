@@ -4,7 +4,6 @@ import com.back.back9.domain.orders.orders.dto.OrderResponse
 import com.back.back9.domain.orders.orders.dto.OrdersRequest
 import com.back.back9.domain.orders.orders.service.OrdersFacade
 import com.back.back9.domain.orders.trigger.service.TriggerService
-import lombok.extern.slf4j.Slf4j
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory
 @RestController
 @RequestMapping("/api/orders")
 @Validated
-@Slf4j
 class OrdersController(private val orderFacade: OrdersFacade, private val triggerService: TriggerService) {
     private val log = LoggerFactory.getLogger(javaClass)
     @GetMapping("/wallet/{walletId}")
