@@ -6,12 +6,12 @@ import type { WalletDto, ChargeDto, BuyCoinRequest } from "@/lib/types/wallet";
 export const walletApi = {
     // 사용자 지갑 전체 조회
     getWallet: (userId: number) =>
-        apiCall<WalletDto>(`/wallets/users/${userId}`),
+        apiCall<WalletDto>(`/api/wallets/users/${userId}`),
 
     // 충전
     charge: (userId: number, amount: number) => {
         const chargeDto: ChargeDto = { amount };
-        return apiCall(`/wallets/users/${userId}/charge`, {
+        return apiCall(`/api/wallets/users/${userId}/charge`, {
             method: "PUT",
             body: JSON.stringify(chargeDto),
         });
@@ -19,14 +19,14 @@ export const walletApi = {
 
     // 코인 구매
     purchase: (userId: number, request: BuyCoinRequest) =>
-        apiCall<WalletDto>(`/wallets/users/${userId}/purchase`, {
+        apiCall<WalletDto>(`/api/wallets/users/${userId}/purchase`, {
             method: "PUT",
             body: JSON.stringify(request),
         }),
 
     // 코인 판매
     sell: (userId: number, request: BuyCoinRequest) =>
-        apiCall<WalletDto>(`/wallets/users/${userId}/sell`, {
+        apiCall<WalletDto>(`/api/wallets/users/${userId}/sell`, {
             method: "PUT",
             body: JSON.stringify(request),
         }),
