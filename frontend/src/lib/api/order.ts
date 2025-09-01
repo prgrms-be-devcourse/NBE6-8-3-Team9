@@ -6,7 +6,7 @@ export const ordersApi = {
         walletId: number,
         payload: OrdersRequest
     ): Promise<OrderResponse> => {
-        const res = await fetch(`/orders/wallet/${walletId}`, {
+        const res = await fetch(`/api/orders/wallet/${walletId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

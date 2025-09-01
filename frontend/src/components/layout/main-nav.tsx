@@ -41,7 +41,7 @@ export function MainNav({
 
         const checkLoginStatus = async () => {
             try {
-                const response = await apiCall('/v1/users/me');
+                const response = await apiCall('/api/v1/users/me');
                 setIsLoggedIn(!!response);
             } catch (error) {
                 setIsLoggedIn(false);
