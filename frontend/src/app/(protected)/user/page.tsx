@@ -28,7 +28,7 @@ export default function MyPage() {
                 const data = await apiCall<{
                     result: UserInfo;
                     message?: string;
-                }>(`/v1/users/me`);
+                }>(`/api/v1/users/me`);
 
                 if (data && data.result) {
                     setUser(data.result);
