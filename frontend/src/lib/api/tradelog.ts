@@ -1,19 +1,19 @@
 import { apiCall } from './client'
 import type { ApiResponse } from '@/lib/types/common'
-import type { TradeLogResponse, TradeGetItems } from '@/lib/types/tradelog'
+import type { TradeLogResponse } from '@/lib/types/tradelog'
 
 export const tradeLogApi = {
   // 사용자의 거래 내역 조회 - 새로운 userId 기반 API 사용
   getUserTradeLogs: (userId: number) =>
-      apiCall<TradeLogResponse[]>(`/tradeLog/user/${userId}`),
+      apiCall<TradeLogResponse[]>(`/api/tradeLog/user/${userId}`),
 
   // 특정 코인의 거래 내역 조회
   getCoinTradeLogs: (userId: number, coinId: number) =>
-      apiCall<ApiResponse<TradeLogResponse[]>>(`/tradeLog/user/${userId}?coinId=${coinId}`),
+      apiCall<ApiResponse<TradeLogResponse[]>>(`/api/tradeLog/user/${userId}?coinId=${coinId}`),
 
   // 특정 거래 내역 상세 조회
   getTradeLogById: (id: number) =>
-      apiCall<ApiResponse<TradeLogResponse>>(`/tradeLog/${id}`),
+      apiCall<ApiResponse<TradeLogResponse>>(`/api/tradeLog/${id}`),
 
   getFilteredTradeLogs: async (
       userId: number,
@@ -28,7 +28,7 @@ export const tradeLogApi = {
     });
 
     const result = await apiCall<TradeLogResponse[]>(
-        `/tradeLog/user/${userId}?${query.toString()}`
+        `/api/tradeLog/user/${userId}?${query.toString()}`
     );
 
     return result ?? []; // null이면 빈 배열 반환
