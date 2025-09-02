@@ -28,6 +28,12 @@ class OrdersController(private val orderFacade: OrdersFacade, private val trigge
         return ResponseEntity.ok(response)
     }
 
+    @PostMapping("/{orderId}/cancel")
+    fun cancelOrder(@PathVariable orderId: Long): ResponseEntity<OrderResponse> {
+        val response = orderFacade.cancelOrder(orderId)
+        return ResponseEntity.ok(response)
+    }
+
     @PostMapping("/price-tick")
     fun priceTick(
         @RequestParam symbol: String,
