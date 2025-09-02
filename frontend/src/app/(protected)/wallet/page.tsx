@@ -68,7 +68,7 @@ export default function WalletPage() {
         const loadUser = async () => {
             try {
                 // 유저 조회는 v1
-                const me = await apiCall<any>("/v1/users/me", { method: "GET" });
+                const me = await apiCall<any>("/api/v1/users/me", { method: "GET" });
                 const id = me?.result?.id;
                 if (!id) {
                     setErrorMessage("로그인이 필요합니다.");
