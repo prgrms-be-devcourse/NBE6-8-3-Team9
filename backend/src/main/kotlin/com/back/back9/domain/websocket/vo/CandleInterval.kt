@@ -4,7 +4,7 @@ package com.back.back9.domain.websocket.vo
  * Upbit API의 캔들 종류와 Redis 키 생성을 관리하는 Enum 클래스
  */
 enum class CandleInterval(val suffix: String, val webSocketType: String) {
-    SEC("minutes/1", "candle.1s"),
+    SEC("seconds", "candle.1s"),
     MIN_1("minutes/1", "candle.1m"),
     MIN_30("minutes/30", "candle.30m"),
     HOUR_1("minutes/60", "candle.60m"),
