@@ -1,6 +1,6 @@
-package com.back.back9.domain.orders.dto
+package com.back.back9.domain.orders.orders.dto
 
-import com.back.back9.domain.orders.entity.OrdersMethod
+import com.back.back9.domain.orders.orders.entity.OrdersMethod
 import com.back.back9.domain.tradeLog.entity.TradeType
 import java.math.BigDecimal
 

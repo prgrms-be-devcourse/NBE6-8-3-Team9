@@ -56,9 +56,6 @@ class TradeLog : BaseEntity {
         this.price = price
     }
 
-    fun setCreatedAt(createdAt: LocalDateTime?) {
-        super.createdAt = createdAt // BaseEntity의 protected createdAt 필드 접근
-    }
 
     class TradeLogBuilder internal constructor() {
         private var wallet: Wallet? = null

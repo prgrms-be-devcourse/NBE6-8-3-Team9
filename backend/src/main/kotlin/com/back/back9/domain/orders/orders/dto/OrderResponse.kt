@@ -1,6 +1,7 @@
-package com.back.back9.domain.orders.dto
+package com.back.back9.domain.orders.orders.dto
 
-import com.back.back9.domain.orders.entity.Orders
+import com.back.back9.domain.orders.orders.entity.Orders
+import com.back.back9.domain.orders.trigger.entity.Trigger
 import java.math.BigDecimal
 
 data class OrderResponse(
@@ -12,7 +13,6 @@ data class OrderResponse(
     val tradeType: String?,
     val price: BigDecimal?,
     val quantity: BigDecimal?,
-    val createdAt: String?
 ) {
     companion object {
         fun from(order: Orders): OrderResponse = OrderResponse(
@@ -24,7 +24,16 @@ data class OrderResponse(
             tradeType = order.tradeType?.name,
             price = order.price,
             quantity = order.quantity,
-            createdAt = order.createdAt?.toString()
+        )
+        fun fromLimit(trigger: Trigger): OrderResponse = OrderResponse(
+            coinId = trigger.coin?.id,
+            coinSymbol = trigger.coin?.symbol,
+            coinName = trigger.coin?.koreanName,
+            orderMethod = trigger.ordersMethod?.name,
+            orderStatus = trigger.status.name,
+            tradeType = trigger.tradeType?.name,
+            price = trigger.executePrice,
+            quantity = trigger.quantity,
         )
     }
 }

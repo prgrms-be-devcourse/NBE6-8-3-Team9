@@ -1,4 +1,4 @@
-package com.back.back9.domain.orders.entity
+package com.back.back9.domain.orders.orders.entity
 
 enum class OrdersStatus {
     PENDING,  // 주문 대기 중

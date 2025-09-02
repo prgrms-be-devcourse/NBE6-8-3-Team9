@@ -7,7 +7,6 @@ import java.math.RoundingMode
 value class Money private constructor(val amount: BigDecimal) {
 
     init {
-        require(amount >= BigDecimal.ZERO) { "금액은 음수가 될 수 없습니다." }
     }
 
     fun toBigDecimal(): BigDecimal = amount

@@ -1,4 +1,4 @@
-package com.back.back9.domain.orders.entity
+package com.back.back9.domain.orders.orders.entity
 
 enum class OrdersMethod {
     LIMIT,  // 지정가 주문

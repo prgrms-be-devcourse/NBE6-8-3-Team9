@@ -1,4 +1,4 @@
-package com.back.back9.domain.orders.entity
+package com.back.back9.domain.orders.orders.entity
 
 import com.back.back9.domain.coin.entity.Coin
 import com.back.back9.domain.tradeLog.entity.TradeType
@@ -41,8 +41,6 @@ class Orders : BaseEntity {
     var price: BigDecimal? = null // 지정가 주문 시 사용
         private set
 
-    private var createdAt: LocalDateTime? = null
-
     @Enumerated(EnumType.STRING)
     var ordersStatus: OrdersStatus? = null // PENDING, FILLED, CANCELLED 등
         private set
@@ -57,7 +55,6 @@ class Orders : BaseEntity {
         ordersMethod: OrdersMethod?,
         quantity: BigDecimal?,
         price: BigDecimal?,
-        createdAt: LocalDateTime?,
         ordersStatus: OrdersStatus?
     ) {
         this.user = user
@@ -67,12 +64,7 @@ class Orders : BaseEntity {
         this.ordersMethod = ordersMethod
         this.quantity = quantity
         this.price = price
-        this.createdAt = createdAt
         this.ordersStatus = ordersStatus
-    }
-
-    override fun getCreatedAt(): LocalDateTime? {
-        return createdAt
     }
 
     class OrdersBuilder internal constructor() {
@@ -132,7 +124,7 @@ class Orders : BaseEntity {
         }
 
         fun build(): Orders {
-            return Orders(user, wallet, coin, tradeType, ordersMethod, quantity, price, createdAt, ordersStatus)
+            return Orders(user, wallet, coin, tradeType, ordersMethod, quantity, price, ordersStatus)
         }
 
         override fun toString(): String {

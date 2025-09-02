@@ -105,7 +105,7 @@ class TradeLogControllerTest @Autowired constructor(
                 .price(Money.of((1000 + i * 1000).toLong()))
                 .build()
 
-            log.setCreatedAt(baseDate.plusDays(((i - 1) * 7).toLong()))
+//            log.setCreatedAt(baseDate.plusDays(((i - 1) * 7).toLong()))
             logs.add(log)
         }
 
