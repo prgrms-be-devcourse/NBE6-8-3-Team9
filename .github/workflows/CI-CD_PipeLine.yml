@@ -1,10 +1,9 @@
 name: CI-CD_PipeLine
 
 permissions:
-  contents: read       # 코드 체크아웃
-  packages: write      # GHCR Push
-  id-token: write      # OIDC (필요시)
-
+  contents: read
+  packages: write
+  id-token: write
 
 on:
   push:
@@ -24,12 +23,10 @@ jobs:
             gradle_cmd: "./gradlew"
             report_path: "backend/build/reports/tests"
             domain_tasks: "testUser testExchange testTrade_log testWallet testCoin"
-
           - os: windows-latest
             gradle_cmd: ".\\gradlew.bat"
             report_path: "backend\\build\\reports\\tests"
             domain_tasks: "testUser testExchange testTrade_log testWallet testCoin"
-
     runs-on: ${{ matrix.os }}
     env:
       SPRING_PROFILES_ACTIVE: test
@@ -38,21 +35,17 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_HOST: ${{ secrets.REDIS_HOST }}
-      # OAuth2 관련 추가 환경변수
       OAUTH2_REDIRECT_URI: "http://localhost:8888/oauth2/callback/google"
       OAUTH2_COOKIE_DOMAIN: ""
       FRONTEND_URL: "http://localhost:8888"
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-
       - name: Generate .env file for Spring Boot
         run: |
           echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
@@ -63,13 +56,9 @@ jobs:
           echo "OAUTH2_REDIRECT_URI=http://localhost:8888/oauth2/callback/google" >> .env
           echo "OAUTH2_COOKIE_DOMAIN=" >> .env
           echo "FRONTEND_URL=http://localhost:8888" >> .env
-
-      # Ubuntu에서는 services.redis로 자동 실행
       - name: Set up Redis on Ubuntu
         if: matrix.os == 'ubuntu-latest'
         uses: supercharge/redis-github-action@1.2.0
-
-      # Windows는 수동으로 redis 다운로드 후 실행
       - name: Install Redis on Windows
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -77,17 +66,14 @@ jobs:
           $url = "https://raw.githubusercontent.com/ServiceStack/redis-windows/master/downloads/redis-64.3.0.503.zip"
           Invoke-WebRequest -Uri $url -OutFile redis.zip
           Expand-Archive redis.zip -DestinationPath redis
-          Start-Process -FilePath redis\\redis-server.exe
-
+          Start-Process -FilePath redis\redis-server.exe
       - name: Grant execute permission to gradlew.bat
         if: matrix.os == 'windows-latest'
         shell: pwsh
-        run: icacls backend\\gradlew.bat /grant Everyone:RX
-
+        run: icacls backend\gradlew.bat /grant Everyone:RX
       - name: Run unit, integration, and domain tests
         run: ${{ matrix.gradle_cmd }} clean test integrationTest ${{ matrix.domain_tasks }}
         working-directory: backend
-
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -99,28 +85,20 @@ jobs:
   build-artifacts:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_AUTH_ENABLED: 'false'  # 인증 비활성화
-
+      NEXT_PUBLIC_AUTH_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v4
-
-      # Frontend build (Next.js)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
       - name: Install deps (frontend)
         working-directory: frontend
         run: npm ci --ignore-scripts
-
       - name: Next build (frontend)
         working-directory: frontend
         run: npm run build
-
-
-      # 산출물 업로드: standalone + static + public
       - name: Upload frontend dist
         uses: actions/upload-artifact@v4
         with:
@@ -130,65 +108,51 @@ jobs:
             frontend/public
           include-hidden-files: true
           if-no-files-found: error
-
-      # Backend build (Gradle bootJar)
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: gradle
-
       - name: Gradle bootJar
         working-directory: backend
         run: ./gradlew --no-daemon clean bootJar -x test
-
       - name: Copy JAR to dist
         working-directory: backend
         run: |
           mkdir -p dist
           cp $(ls build/libs/*.jar | grep -v plain | head -n 1) dist/app.jar
-
       - name: Upload backend jar
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: backend/dist/app.jar
 
-  # 3) DOCKER BUILD: 런타임 전용 Dockerfile로 이미지화 & GHCR 푸시
   docker-build:
     needs: build-artifacts
     runs-on: ubuntu-latest
     env:
       REGISTRY: ghcr.io
       IMAGE_PREFIX: ${{ github.repository_owner }}
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Download frontend dist
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
           path: frontend
-
-
       - name: Debug frontend folder
         run: ls -Ra frontend
-
       - name: Download backend jar
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: backend/dist
-
       - uses: docker/setup-buildx-action@v3
-
       - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build & push backend (runtime-only)
         uses: docker/build-push-action@v6
         with:
@@ -200,7 +164,6 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-backend-kotlinv2:latest
           cache-from: type=gha
           cache-to:   type=gha,mode=max
-
       - name: Build & push frontend (runtime-only)
         uses: docker/build-push-action@v6
         with:
@@ -212,3 +175,33 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/back9-frontend-kotlinv2:latest
           cache-from: type=gha
           cache-to:   type=gha,mode=max
+
+  deploy-ec2:
+    needs: docker-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload compose to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: ${{ secrets.EC2_WORKDIR }}
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: EC2_WORKDIR
+          script: |
+            set -euxo pipefail
+            cd "$EC2_WORKDIR"
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -af || true

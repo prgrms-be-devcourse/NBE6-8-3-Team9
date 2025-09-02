@@ -1,0 +1,68 @@
+name: back9-stack
+
+services:
+  frontend:
+    image: ghcr.io/${IMAGE_OWNER}/back9-frontend-kotlinv2:${TAG:-latest}
+    container_name: back9-frontend
+    restart: unless-stopped
+    env_file: [ ./.env ]
+    environment:
+      PORT: ${PORT:-80}
+      APP_PORT: ${APP_PORT:-3001}
+    ports:
+      - "${PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/healthz || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks: [ app_net ]
+
+  backend:
+    image: ghcr.io/${IMAGE_OWNER}/back9-backend-kotlinv2:${TAG:-latest}
+    container_name: back9-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # === RDS 연결 ===
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${RDS_HOST}:${RDS_PORT:-5432}/${RDS_DB}?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: ${RDS_USER}
+      SPRING_DATASOURCE_PASSWORD: ${RDS_PASSWORD}
+
+      # === Redis (내부 전용) ===
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # === 기타 ===
+      SERVER_PORT: 8080
+      JAVA_OPTS: ${JAVA_OPTS}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    expose: [ "8080" ]    # 내부에서만 통신
+    depends_on:
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks: [ app_net ]
+
+  redis:
+    image: redis:7-alpine
+    container_name: back9-redis
+    command: [ "redis-server", "--appendonly", "no" ]
+    networks: [ app_net ]
+
+networks:
+  app_net:
+    driver: bridge

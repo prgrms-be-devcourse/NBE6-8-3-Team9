@@ -69,6 +69,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     
     // JWT 런타임
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
