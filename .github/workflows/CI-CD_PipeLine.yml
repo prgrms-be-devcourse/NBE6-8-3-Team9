@@ -181,6 +181,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      - run: echo "EC2_WORKDIR=${{ secrets.EC2_WORKDIR }}" >> $GITHUB_ENV
       - uses: actions/checkout@v4
 
       - name: Upload compose to EC2
@@ -189,8 +190,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: ${{ secrets.EC2_WORKDIR }}
+          source: docker-compose.yml
+          target: ${{ env.EC2_WORKDIR }}   # ← env로 변경
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -200,8 +201,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: EC2_WORKDIR
           script: |
-            set -euxo pipefail
+            set -euo pipefail
+            : "${EC2_WORKDIR:?EC2_WORKDIR must be set}"
+            sudo systemctl enable --now docker || true
+            mkdir -p "$EC2_WORKDIR"
             cd "$EC2_WORKDIR"
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -af || true
+            sudo docker compose --env-file .env pull
+            sudo docker compose --env-file .env up -d --remove-orphans
+            sudo docker image prune -af || true
