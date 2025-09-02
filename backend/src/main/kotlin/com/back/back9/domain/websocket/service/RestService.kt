@@ -16,14 +16,23 @@ import kotlin.math.min
 class RestService(
     private val redisService: RedisService,
     webClientBuilder: WebClient.Builder,
-    private val mapper: ObjectMapper
+    private val mapper: ObjectMapper,
+    private val provider: DatabaseCoinListProvider
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private var webClient: WebClient = webClientBuilder
         .baseUrl("https://api.upbit.com/v1")
         .build()
 
-    // fetchUntil 메소드를 fetchUntilForMarkets로 변경하고 markets를 파라미터로 받도록 수정합니다.
+    /**
+     * 테스트 코드와 호환성을 위해 추가된 메서드
+     * 현재 DB/Provider에 등록된 코인 목록을 대상으로 fetchUntilForMarkets 실행
+     */
+    fun fetchInterval(interval: CandleInterval, count: Int): Int {
+        val markets = provider.getMarketCodes()
+        return fetchUntilForMarkets(interval, count, markets)
+    }
+
     fun fetchUntilForMarkets(interval: CandleInterval, requiredSize: Int, markets: List<String>): Int {
         var totalSaved = 0
         markets.forEach { market ->
@@ -36,7 +45,6 @@ class RestService(
         return totalSaved
     }
 
-    // ... 이하 나머지 코드는 이전과 동일 ...
     private fun fetchIntervalForMarket(interval: CandleInterval, count: Int, market: String): Int {
         var savedCount = 0
         var fetchedCount = 0
@@ -51,7 +59,7 @@ class RestService(
                 val array: JsonNode = mapper.readTree(json)
                 savedCount += saveCandleArray(interval, market, array)
             }.onFailure { e ->
-                log.error("❌ [${interval.name}::$market] 데이터 수집 실패: ${e.message}", e)
+                log.error("[${interval.name}::$market] 데이터 수집 실패: ${e.message}", e)
             }
             fetchedCount += requestSize
             Thread.sleep(110)
