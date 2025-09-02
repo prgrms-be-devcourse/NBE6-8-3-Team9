@@ -10,7 +10,7 @@ RUN apt-get update \
 WORKDIR /app
 
 # Next.js 빌드 산출물 복사 (CI가 미리 생성)
-COPY .next/standalone ./          # 여기 안에 server.js 포함
+COPY .next/standalone ./
 COPY .next ./.next
 COPY public ./public
 
