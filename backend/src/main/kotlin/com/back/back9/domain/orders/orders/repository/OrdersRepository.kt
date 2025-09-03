@@ -25,6 +25,7 @@ WHERE o.wallet.id = :walletId
   AND o.createdAt <= COALESCE(:endDate,   o.createdAt)
 """)
     fun findByOrdersFilter(
+
         @Param("walletId") walletId: Long,
         @Param("coinSymbol") coinSymbol: String?,
         @Param("tradeType") tradeType: TradeType?,
@@ -34,5 +35,6 @@ WHERE o.wallet.id = :walletId
         @Param("endDate") endDate: LocalDateTime?,
         pageable: Pageable
     ): Page<Orders>
+
 
 }
