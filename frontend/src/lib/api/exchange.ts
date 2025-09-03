@@ -1,4 +1,5 @@
-import type { CandleDTO, InitialRequestDTO, PreviousRequestDTO } from "@/lib/types/exchange/type";
+import {ExchangeDTO, InitialRequestDTO, PreviousRequestDTO} from "@/lib/types/exchange/type";
+
 
 /**
  * 비동기 함수의 중복 호출을 방지하는 고차 함수
@@ -22,12 +23,12 @@ function preventDuplicateCalls<T extends (...args: any[]) => Promise<any>>(async
 }
 
 const exchange = {
-    getLatest: async (): Promise<CandleDTO[]> => {
+    getLatest: async (): Promise<ExchangeDTO[]> => {
         const res = await fetch("/api/exchange/coins-latest");
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
     },
-    getInitialCandles: async (payload: InitialRequestDTO): Promise<CandleDTO[]> => {
+    getInitialCandles: async (payload: InitialRequestDTO): Promise<ExchangeDTO[]> => {
         const res = await fetch("/api/exchange/initial", {
             method: "POST",
             body: JSON.stringify(payload),
@@ -36,7 +37,7 @@ const exchange = {
         if (!res.ok) throw new Error("초기 캔들 데이터 로딩 실패");
         return res.json();
     },
-    getPreviousCandles: async (payload: PreviousRequestDTO): Promise<CandleDTO[]> => {
+    getPreviousCandles: async (payload: PreviousRequestDTO): Promise<ExchangeDTO[]> => {
         const res = await fetch("/api/exchange/previous", {
             method: "POST",
             body: JSON.stringify(payload),
