@@ -49,7 +49,7 @@ class OrdersService(
         endDate: LocalDateTime?,
         pageable: Pageable
     ): Page<OrderResponse?> {
-        val orders: Page<Orders> = ordersRepository.findByWalletIdFilter(
+        val orders: Page<Orders> = ordersRepository.findByOrdersFilter(
             walletId = walletId,
             coinSymbol = coinSymbol,
             tradeType = tradeType,
