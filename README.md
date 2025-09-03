@@ -31,7 +31,7 @@
 - [`Spring Security`]
 - [`Spring Data JPA`]
 - [`REST API`]
-- ['Websocket']
+- [`Websocket`]
 - [`PostgreSQL(supabase 사용)`](https://supabase.com/)
 
 ### 프론트 엔드
