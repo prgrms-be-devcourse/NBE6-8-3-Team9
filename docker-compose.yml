@@ -30,6 +30,8 @@ services:
       PORT: "8080"
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       SPRING_JPA_HIBERNATE_DDL_AUTO: create
+      SERVER_FORWARD_HEADERS_STRATEGY: native
+
 
       # === RDS 연결 ===
       SPRING_DATASOURCE_URL: "jdbc:postgresql://${RDS_HOST}:${RDS_PORT:-5432}/${RDS_DB}?sslmode=require"

@@ -27,7 +27,7 @@ class SecurityConfig(
     fun corsConfigurationSource(): UrlBasedCorsConfigurationSource {
         val config = CorsConfiguration()
         config.allowCredentials = true
-        config.addAllowedOrigin("http://localhost:3000")
+        config.allowedOriginPatterns = listOf("http://localhost:3000", "https://d64t5u28gt0rl.cloudfront.net")
         config.addAllowedHeader("*")
         config.addAllowedMethod("*")
         config.addExposedHeader("Set-Cookie")
