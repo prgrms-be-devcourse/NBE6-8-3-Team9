@@ -24,7 +24,7 @@ interface OrdersRepository : JpaRepository<Orders, Long?> {
       AND o.createdAt >= COALESCE(:startDate, o.createdAt)
       AND o.createdAt <= COALESCE(:endDate,   o.createdAt)
     """)
-    fun findOrders(
+    fun findByWalletIdFilter(
         @Param("walletId") walletId: Long,
         @Param("coinSymbol") coinSymbol: String?,
         @Param("tradeType") tradeType: TradeType?,
