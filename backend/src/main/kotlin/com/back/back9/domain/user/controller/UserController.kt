@@ -1,6 +1,9 @@
 package com.back.back9.domain.user.controller
 
 import com.back.back9.domain.user.dto.UserDto
+import com.back.back9.domain.user.dto.UserRegisterDto
+import com.back.back9.domain.user.dto.UserLoginReqBody
+import com.back.back9.domain.user.dto.UserLoginResBody
 import com.back.back9.domain.user.service.UserService
 import com.back.back9.global.rq.Rq
 import com.back.back9.global.rsData.RsData
@@ -11,8 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Size
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.Authentication
@@ -31,29 +32,11 @@ class UserController(
 ) {
     private val log = LoggerFactory.getLogger(UserController::class.java)
 
-    data class UserRegisterReqBody(
-        @field:NotBlank @field:Size(min = 2, max = 30)
-        val userLoginId: String,
-        @field:NotBlank @field:Size(min = 2, max = 30)
-        val username: String,
-        @field:NotBlank @field:Size(min = 2, max = 30)
-        val password: String,
-        @field:NotBlank @field:Size(min = 2, max = 30)
-        val confirmPassword: String
-    )
-
     @PostMapping("/register")
     @Operation(summary = "회원가입")
-    fun register(@Valid @RequestBody reqBody: UserRegisterReqBody): RsData<UserDto> {
+    fun register(@Valid @RequestBody reqBody: UserRegisterDto): RsData<UserDto> {
         log.info("회원가입 요청: {}", reqBody)
-        val registerResult = userService.register(
-            com.back.back9.domain.user.dto.UserRegisterDto(
-                reqBody.userLoginId,
-                reqBody.username,
-                reqBody.password,
-                reqBody.confirmPassword
-            )
-        )
+        val registerResult = userService.register(reqBody)
         log.info("회원가입 결과: {}", registerResult)
         if (!registerResult.resultCode.startsWith("200")) {
             log.warn("회원가입 실패: {}", registerResult)
@@ -65,33 +48,13 @@ class UserController(
 
     @PostMapping("/register-admin")
     @Operation(summary = "관리자 회원가입")
-    fun registerAdmin(@Valid @RequestBody reqBody: UserRegisterReqBody): RsData<UserDto> {
-        val registerResult = userService.registerAdmin(
-            com.back.back9.domain.user.dto.UserRegisterDto(
-                reqBody.userLoginId,
-                reqBody.username,
-                reqBody.password,
-                reqBody.confirmPassword
-            )
-        )
+    fun registerAdmin(@Valid @RequestBody reqBody: UserRegisterDto): RsData<UserDto> {
+        val registerResult = userService.registerAdmin(reqBody)
         if (!registerResult.resultCode.startsWith("200")) {
             return RsData(registerResult.resultCode, registerResult.msg)
         }
         return RsData("201", registerResult.msg, UserDto.from(registerResult.data!!))
     }
-
-    data class UserLoginReqBody(
-        @field:NotBlank @field:Size(min = 2, max = 30)
-        val userLoginId: String,
-        @field:NotBlank @field:Size(min = 2, max = 30)
-        val password: String
-    )
-
-    data class UserLoginResBody(
-        val item: UserDto,
-        val apiKey: String,
-        val accessToken: String
-    )
 
     @PostMapping("/login")
     @Operation(summary = "로그인")
@@ -136,7 +99,7 @@ class UserController(
             log.info("OAuth 세션 사용자 로그아웃 처리 완료")
         }
 
-        // --- 공통 삭제용 헤더 생성 헬퍼 람다 ---
+        // --- 공통 삭제용 헬퍼 람다 ---
         val deleteCookieBoth = BiConsumer<String, String> { name, path ->
             val base = "$name=; Path=$path; Max-Age=0; SameSite=None; Secure; HttpOnly"
             response.addHeader(HttpHeaders.SET_COOKIE, base)

@@ -90,6 +90,8 @@ export default function LoginPage() {
 
     const onSubmit = async (values: any) => {
         try {
+            setSuccessMessage(null); // 로그인 시도 시 회원가입 성공 메시지 초기화
+            setError(null); // 이전 에러도 초기화
             console.log('로그인 시도:', values.userLoginId);
 
             // API 클라이언트를 사용하여 일관된 설정으로 로그인 요청
@@ -107,10 +109,12 @@ export default function LoginPage() {
             } else {
                 console.log('로그인 실패 - 토큰 없음:', data);
                 setError((data as any)?.message || "로그인 실패");
+                setSuccessMessage(null); // 로그인 실패 시 회원가입 성공 메시지 숨김
             }
         } catch (error) {
             console.error('로그인 오류:', error);
             setError("로그인 중 오류가 발생했습니다.");
+            setSuccessMessage(null); // 로그인 에러 시 회원가입 성공 메시지 숨김
         }
     };
 
