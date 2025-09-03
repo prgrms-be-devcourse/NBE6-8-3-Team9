@@ -5,7 +5,6 @@ import com.back.back9.domain.coin.repository.CoinRepository
 import com.back.back9.domain.common.vo.money.Money
 import com.back.back9.domain.orders.orders.dto.OrdersRequest
 import com.back.back9.domain.orders.orders.entity.OrdersMethod
-import com.back.back9.domain.orders.orders.service.OrdersFacade
 import com.back.back9.domain.orders.orders.service.OrdersService
 import com.back.back9.domain.tradeLog.entity.TradeType
 import com.back.back9.domain.user.entity.User
@@ -29,9 +28,9 @@ import kotlin.test.assertEquals
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 class OrdersServiceTest {
-    @Autowired
-    private val ordersFacade: OrdersFacade? = null
 
+    @Autowired
+    private val ordersService: OrdersService? = null
     @Autowired
     private val userRepository: UserRepository? = null
 
@@ -89,13 +88,14 @@ class OrdersServiceTest {
 
         )
         // when
-        val orderResponse = ordersFacade?.placeOrder(wallet1!!.id!!, ordersRequest)
+        val order = ordersService?.executeOrder(wallet1!!.id!!, ordersRequest)
+
         // then
-        Assertions.assertNotNull(orderResponse)
-        orderResponse?.let { Assertions.assertEquals(coin1!!.id, it.coinId) }
-        orderResponse?.let { Assertions.assertEquals(BigDecimal.valueOf(0.1), it.quantity) }
-        orderResponse?.let { Assertions.assertEquals(BigDecimal.valueOf(10000000L), it.price) }
-        orderResponse?.let { Assertions.assertEquals("BUY", it.tradeType) }
+        Assertions.assertNotNull(order)
+        order?.let { Assertions.assertEquals(coin1!!.id, it.coin?.id) }
+        order?.let { Assertions.assertEquals(BigDecimal.valueOf(0.1), it.quantity) }
+        order?.let { Assertions.assertEquals(BigDecimal.valueOf(10000000L), it.price) }
+        order?.let { Assertions.assertEquals("BUY", it.tradeType.toString()) }
 
 
         //        log.info("매수 주문 성공: {}", orderResponse);
@@ -117,8 +117,8 @@ class OrdersServiceTest {
             price = BigDecimal.valueOf(6000000000L)
         )
 
-        val ex = assertThrows<ErrorException> {
-            ordersFacade!!.placeOrder(wallet1!!.id!!, ordersRequest)
+        val ex = Assertions.assertThrows(ErrorException::class.java) {
+            ordersService!!.executeOrder(wallet1!!.id!!, ordersRequest)
         }
         assertEquals("INSUFFICIENT_BALANCE", ex.message)
     }

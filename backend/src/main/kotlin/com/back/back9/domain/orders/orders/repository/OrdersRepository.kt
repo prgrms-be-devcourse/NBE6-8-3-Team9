@@ -15,16 +15,17 @@ interface OrdersRepository : JpaRepository<Orders, Long?> {
     fun findByWalletId(walletId: Long?): MutableList<Orders>
     fun findById(id: Long?): Orders?
     @Query("""
-    SELECT o FROM Orders o
-    WHERE o.wallet.id = :walletId
-      AND (:coinSymbol IS NULL OR o.coin.symbol = :coinSymbol)
-      AND (:tradeType  IS NULL OR o.tradeType    = :tradeType)
-      AND (:orderMethod IS NULL OR o.ordersMethod = :orderMethod)
-      AND (:orderStatus IS NULL OR o.ordersStatus = :orderStatus)
-      AND o.createdAt >= COALESCE(:startDate, o.createdAt)
-      AND o.createdAt <= COALESCE(:endDate,   o.createdAt)
-    """)
-    fun findByWalletIdFilter(
+SELECT o FROM Orders o
+WHERE o.wallet.id = :walletId
+  AND (:coinSymbol IS NULL OR o.coin.symbol = :coinSymbol)
+  AND (:tradeType  IS NULL OR o.tradeType    = :tradeType)
+  AND (:orderMethod IS NULL OR o.ordersMethod = :orderMethod)
+  AND (:orderStatus IS NULL OR o.ordersStatus = :orderStatus)
+  AND o.createdAt >= COALESCE(:startDate, o.createdAt)
+  AND o.createdAt <= COALESCE(:endDate,   o.createdAt)
+""")
+    fun findByOrdersFilter(
+
         @Param("walletId") walletId: Long,
         @Param("coinSymbol") coinSymbol: String?,
         @Param("tradeType") tradeType: TradeType?,

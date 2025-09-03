@@ -3,22 +3,29 @@ package com.back.back9.domain.orders.orders.controller
 import com.back.back9.domain.orders.orders.dto.OrderResponse
 import com.back.back9.domain.orders.orders.dto.OrdersRequest
 import com.back.back9.domain.orders.orders.dto.OrdersSearchRequest
-import com.back.back9.domain.orders.orders.service.OrdersFacade
+import com.back.back9.domain.orders.orders.entity.Orders
+import com.back.back9.domain.orders.orders.entity.OrdersMethod
 import com.back.back9.domain.orders.orders.service.OrdersService
+import com.back.back9.domain.orders.price.fetcher.ExchangePriceFetcher
 import com.back.back9.domain.orders.trigger.service.TriggerService
+import com.back.back9.domain.orders.trigger.support.RedisKeys
+import com.back.back9.domain.tradeLog.entity.TradeType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Pageable
+import org.springframework.data.redis.core.StringRedisTemplate
 import java.time.LocalTime
 
 @RestController
 @RequestMapping("/api/orders")
 @Validated
 class OrdersController(
-    private val orderFacade: OrdersFacade,
+    private val ordersService: OrdersService,
+    private val redis: StringRedisTemplate,
+    private val exchangePriceFetcher: ExchangePriceFetcher,
     private val triggerService: TriggerService,
     private val orderService : OrdersService
 ) {
@@ -57,9 +64,40 @@ class OrdersController(
     fun placeOrder(
         @PathVariable walletId: Long,
         @RequestBody request: OrdersRequest
-    ): ResponseEntity<OrderResponse> {
-        val response = orderFacade.placeOrder(walletId, request)
-        return ResponseEntity.ok(response)
+    ): OrderResponse {
+    return when (request.ordersMethod) {
+            OrdersMethod.MARKET -> {
+                log.info("placeOrder 실행 → MARKET 주문 처리 (walletId=$walletId, coin=${request.coinSymbol})")
+                val order = ordersService.executeOrder(walletId, request)
+                OrderResponse.from(order)
+            }
+
+            OrdersMethod.LIMIT -> {
+                val latestKey = RedisKeys.latestPrice(request.coinSymbol)
+                val latestStr = redis.opsForValue().get(latestKey)
+                val latestPrice = latestStr?.toBigDecimalOrNull()
+
+                if (latestPrice != null) {
+                    // BUY: 현재가 <= 예약가 → 바로 체결
+                    if (request.tradeType == TradeType.BUY && latestPrice <= request.price) {
+                        val order = ordersService.executeOrder(walletId, request)
+                        return OrderResponse.from(order)
+                    }
+                    // SELL: 현재가 >= 예약가 → 바로 체결
+                    if (request.tradeType == TradeType.SELL && latestPrice >= request.price) {
+                        val order = ordersService.executeOrder(walletId, request)
+                        return OrderResponse.from(order)
+                    }
+                }
+                //1.주문 생성
+                val order: Orders = ordersService.createOrder(walletId, request)
+                //2. 트리거 생성
+                triggerService.registerFromOrder(walletId, order)
+                exchangePriceFetcher.addMonitoring(request.coinSymbol)
+                return OrderResponse.from(order)
+            }
+
+        }
     }
 
     @PostMapping("/cancel")
