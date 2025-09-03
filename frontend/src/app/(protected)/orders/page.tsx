@@ -509,31 +509,31 @@ export default function TransactionsPage() {
                     />
                 </motion.div>
             </motion.div>
-            {userId && <OrderNotification userId={userId} />}
+            {/*{userId && <OrderNotification userId={userId} />}*/}
 
-            <Button
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-                onClick={async () => {
-                    try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/mock`, {
-                            method: "POST",
-                            credentials : "include",
-                        });
-                        if (res.ok) {
-                            alert("거래 현황 15개 생성 완료!");
-                            fetchOrders(); // 다시 불러오기
-                        } else {
-                            alert("생성 실패");
-                        }
-                    } catch (err) {
-                        console.error("Mock 생성 실패:", err);
-                        alert("에러 발생");
-                    }
-                }}
-            >
-                거래현황 생성
-            </Button>
+            {/*<Button*/}
+            {/*    size="sm"*/}
+            {/*    className="bg-green-600 hover:bg-green-700"*/}
+            {/*    onClick={async () => {*/}
+            {/*        try {*/}
+            {/*            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/mock`, {*/}
+            {/*                method: "POST",*/}
+            {/*                credentials : "include",*/}
+            {/*            });*/}
+            {/*            if (res.ok) {*/}
+            {/*                alert("거래 현황 15개 생성 완료!");*/}
+            {/*                fetchOrders(); // 다시 불러오기*/}
+            {/*            } else {*/}
+            {/*                alert("생성 실패");*/}
+            {/*            }*/}
+            {/*        } catch (err) {*/}
+            {/*            console.error("Mock 생성 실패:", err);*/}
+            {/*            alert("에러 발생");*/}
+            {/*        }*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*    거래현황 생성*/}
+            {/*</Button>*/}
 
         </PageShell>
     );
