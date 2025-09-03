@@ -51,13 +51,13 @@ export function MainNav({
 
         checkLoginStatus();
 
-        window.addEventListener('focus', checkLoginStatus);
-        const interval = setInterval(checkLoginStatus, 30000);
+        // window.addEventListener('focus', checkLoginStatus);
+        // const interval = setInterval(checkLoginStatus, 30000);
 
-        return () => {
-            window.removeEventListener('focus', checkLoginStatus);
-            clearInterval(interval);
-        };
+        // return () => {
+        //     window.removeEventListener('focus', checkLoginStatus);
+        //     clearInterval(interval);
+        // };
     }, []);
 
     return (
