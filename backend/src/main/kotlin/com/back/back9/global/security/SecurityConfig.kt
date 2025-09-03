@@ -54,7 +54,9 @@ class SecurityConfig(
                             "/oauth2/**", "/login/oauth2/**", "/login", "/error",
                             "/favicon.ico", "/robots.txt", "/sitemap.xml",
                             "/css/**", "/js/**", "/images/**", "/static/**",
-                            "/ws/**"
+                            "/ws/**",
+                            "/actuator/health/", "/actuator/info",
+                            "/api/actuator/health/", "/api/actuator/info"
                     ).permitAll()
                     .requestMatchers("/api/v1/adm/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
