@@ -183,7 +183,7 @@ class AnalyticsService(
 
         for (info in coinHoldingInfos) {
             // 최신 시세 정보 조회
-            val coinPriceResponse = exchangeService.getLatestCandleByScan(info.coinName)
+            val coinPriceResponse = exchangeService.getLatestCandleByScan(info.coinSymbol)
             val quantity = info.quantity // 현재 보유 수량
             val avgBuyPrice = Money.of(info.averageBuyPrice) // 평균 매수가
             var currentPrice = Money.of(coinPriceResponse.price) // 현재가
