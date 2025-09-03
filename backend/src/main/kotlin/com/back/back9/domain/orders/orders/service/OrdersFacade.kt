@@ -2,6 +2,7 @@ package com.back.back9.domain.orders.orders.service
 
 import com.back.back9.domain.orders.orders.dto.OrderResponse
 import com.back.back9.domain.orders.orders.dto.OrdersRequest
+import com.back.back9.domain.orders.orders.entity.Orders
 import com.back.back9.domain.orders.orders.entity.OrdersMethod.*
 import com.back.back9.domain.orders.price.fetcher.ExchangePriceFetcher
 import com.back.back9.domain.orders.trigger.service.TriggerService
@@ -52,11 +53,12 @@ class OrdersFacade(
                         return OrderResponse.from(order)
                     }
                 }
-
-                // 조건 불충족 → 트리거 + PENDING
-                triggerService.registerFromOrder(walletId, request)
+                //1.주문 생성
+                val order: Orders = ordersService.createOrder(walletId, request)
+                //2. 트리거 생성
+                triggerService.registerFromOrder(walletId, order)
                 exchangePriceFetcher.addMonitoring(request.coinSymbol)
-                return ordersService.createPendingOrder(walletId, request)
+                return OrderResponse.from(order)
             }
 
         }

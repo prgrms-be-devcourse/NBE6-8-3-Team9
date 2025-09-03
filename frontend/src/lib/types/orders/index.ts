@@ -13,13 +13,17 @@ export interface OrdersRequest {
 }
 
 export interface OrderResponse {
+    id: number;
     coinId: number;          // 코인 ID
     coinSymbol: string;      // 코인 심볼 (예: "BTC")
     coinName: string;        // 코인 이름 (예: "비트코인")
     orderMethod: 'LIMIT' | 'MARKET';  // 주문 방식
-    orderStatus: 'WAIT' | 'COMPLETE' | 'CANCEL' | string; // 주문 상태 (백엔드 enum에 맞게 수정)
+    orderStatus: 'PENDING' | 'FILLED' | 'CANCELLED' |
+        'FAILED' | 'EXPIRED' | 'PARTIALLY_FILLED' | string; // 주문 상태 (백엔드 enum에 맞게 수정)
     tradeType: 'BUY' | 'SELL';        // 거래 타입
     price: string;           // 단가 (BigDecimal → string)
     quantity: string;        // 수량 (BigDecimal → string)
-    createdAt: string;       // ISO-8601 날짜 문자열
+    createDate: string;       // ISO-8601 날짜 문자열
+    updateDate: string;    // ISO-8601 날짜 문자열
 }
+

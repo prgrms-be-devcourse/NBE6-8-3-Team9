@@ -23,45 +23,45 @@ class InitData(
     private val log: Logger = LoggerFactory.getLogger(InitData::class.java)
     @PostConstruct
     fun init() {
-        if (userRepository.count() > 0){
-            log.info("Initdata 이미 존재")
-            return
-        } // 중복 삽입 방지
-        val encodedPassword = passwordEncoder.encode("user")
-
-        val user1 = userRepository.save(
-            User.builder()
-                .userLoginId("user1")
-                .username("유저1")
-                .password(encodedPassword) // 실제에선 반드시 인코딩 필요
-                .role(User.UserRole.ADMIN)
-                .build()
-        )
-
-        val wallet1 = walletRepository.save(
-            Wallet.builder()
-                .user(user1)
-                .address("Korea")
-                .balance(Money.of(500_000_000L))
-                .coinAmounts(mutableListOf()) // null 방지
-                .build()
-        )
-
-        coinRepository.saveAll(
-            listOf(
-                Coin.builder()
-                    .symbol("KRW-BTC")
-                    .koreanName("비트코인")
-                    .englishName("Bitcoin")
-                    .build(),
-                Coin.builder()
-                    .symbol("KRW-ETH")
-                    .koreanName("이더리움")
-                    .englishName("Ethereum")
-                    .build()
-            )
-        )
-
-        println("✅ InitData 로드 완료: user=${user1.userLoginId}, wallet=${wallet1.address}")
+//        if (userRepository.count() > 0){
+//            log.info("Initdata 이미 존재")
+//            return
+//        } // 중복 삽입 방지
+//        val encodedPassword = passwordEncoder.encode("user")
+//
+//        val user1 = userRepository.save(
+//            User.builder()
+//                .userLoginId("user1")
+//                .username("유저1")
+//                .password(encodedPassword) // 실제에선 반드시 인코딩 필요
+//                .role(User.UserRole.ADMIN)
+//                .build()
+//        )
+//
+//        val wallet1 = walletRepository.save(
+//            Wallet.builder()
+//                .user(user1)
+//                .address("Korea")
+//                .balance(Money.of(500_000_000L))
+//                .coinAmounts(mutableListOf()) // null 방지
+//                .build()
+//        )
+//
+//        coinRepository.saveAll(
+//            listOf(
+//                Coin.builder()
+//                    .symbol("KRW-BTC")
+//                    .koreanName("비트코인")
+//                    .englishName("Bitcoin")
+//                    .build(),
+//                Coin.builder()
+//                    .symbol("KRW-ETH")
+//                    .koreanName("이더리움")
+//                    .englishName("Ethereum")
+//                    .build()
+//            )
+//        )
+//
+//        println("✅ InitData 로드 완료: user=${user1.userLoginId}, wallet=${wallet1.address}")
     }
 }

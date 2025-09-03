@@ -17,7 +17,6 @@ import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/layout/page-shell";
 import { tradeLogApi } from "@/lib/api/tradelog";
 import { apiCall } from "@/lib/api/client";
-import { walletApi } from "@/lib/api/wallet";
 import type { TradeLogResponse } from "@/lib/types/tradelog";
 
 const columns: ColumnDef<TradeLogResponse>[] = [
@@ -98,7 +97,7 @@ export default function TransactionsPage() {
                         username: string;
                     };
                     message?: string;
-                }>('/v1/users/me');
+                }>('/api/v1/users/me');
                 if (response && (response as any).result?.id) {
                     const currentUserId = (response as any).result.id;
                     setIsAuthenticated(true);
@@ -223,7 +222,7 @@ export default function TransactionsPage() {
         >
             <motion.div className="container py-8 space-y-6" variants={stagger(0.1)} initial="hidden" animate="show" suppressHydrationWarning>
                 <motion.h1 variants={fadeInUp} className="text-2xl font-bold w-full text-left" suppressHydrationWarning>
-                    가상화폐 주문 내역 페이지
+                    가상화폐 거래 내역
                 </motion.h1>
 
                 {/* 필터 */}
