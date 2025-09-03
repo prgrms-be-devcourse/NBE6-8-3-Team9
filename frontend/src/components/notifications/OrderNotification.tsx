@@ -8,8 +8,9 @@ export default function OrderNotification({ userId }: { userId: number }) {
     useEffect(() => {
         // 여러 엔드포인트 시도 (local → cloudfront)
         const endpoints = [
-            "http://localhost:8080/ws",
-            "https://d64t5u28gt0rl.cloudfront.net/ws",
+            process.env.NODE_ENV === "production"
+                ? "https://d64t5u28gt0rl.cloudfront.net/ws",
+                : "http://localhost:8080/ws"
         ];
 
         let stompClient: Client | null = null;
