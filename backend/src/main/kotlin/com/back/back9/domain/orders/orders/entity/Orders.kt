@@ -1,6 +1,7 @@
 package com.back.back9.domain.orders.orders.entity
 
 import com.back.back9.domain.coin.entity.Coin
+import com.back.back9.domain.orders.orders.dto.OrdersRequest
 import com.back.back9.domain.tradeLog.entity.TradeType
 import com.back.back9.domain.user.entity.User
 import com.back.back9.domain.wallet.entity.Wallet
@@ -44,6 +45,36 @@ class Orders : BaseEntity {
     @Enumerated(EnumType.STRING)
     var ordersStatus: OrdersStatus? = null // PENDING, FILLED, CANCELLED 등
         private set
+
+    @Column(columnDefinition = "TEXT")
+    var failReason: String? = null
+        private set
+
+    // === 상태 변경 메서드 ===
+    fun markFilled() {
+        this.ordersStatus = OrdersStatus.FILLED
+    }
+
+    fun markFailed(reason: String) {
+        this.ordersStatus = OrdersStatus.FAILED
+        this.failReason = reason
+    }
+
+    fun markCancelled() {
+        this.ordersStatus = OrdersStatus.CANCELLED
+    }
+
+    fun markPending() {
+        this.ordersStatus = OrdersStatus.PENDING
+    }
+
+    fun markPartiallyFilled() {
+        this.ordersStatus = OrdersStatus.PARTIALLY_FILLED
+    }
+
+    fun markExpired() {
+        this.ordersStatus = OrdersStatus.EXPIRED
+    }
 
     protected constructor()
 
@@ -137,5 +168,6 @@ class Orders : BaseEntity {
         fun builder(): OrdersBuilder {
             return OrdersBuilder()
         }
+
     }
 }

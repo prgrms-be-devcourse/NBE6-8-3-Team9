@@ -6,7 +6,7 @@ import {
     flexRender,
     getCoreRowModel,
     useReactTable,
-    getPaginationRowModel,
+    getPaginationRowModel, RowSelectionState, OnChangeFn, Row,
 } from "@tanstack/react-table";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -20,12 +20,20 @@ type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     pageSize?: number;
+    rowSelection?: RowSelectionState
+    // @ts-ignore
+    onRowSelectionChange?: OnChangeFn<RowSelectionState>
+    getRowId?: (row: TData, index: number, parent?: Row<TData>) => string; // ✅ 선택적으로 받기
+
 };
 
 export function DataTable<TData, TValue>({
                                              columns,
                                              data,
                                              pageSize = 10,
+                                             rowSelection,
+                                             onRowSelectionChange,
+                                             getRowId, // ✅ 부모에서 받음
                                          }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
@@ -33,9 +41,18 @@ export function DataTable<TData, TValue>({
         initialState: {
             pagination: { pageIndex: 0, pageSize },
         },
+        state: {
+            rowSelection,
+        },
+        onRowSelectionChange,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-    });
+        getRowId: getRowId ?? ((row: any, index: number) => {
+            if (row.id !== undefined && row.id !== null) {
+                return String(row.id);       // ✅ DB id 우선
+            }
+            return String(index);          // ✅ fallback
+        }),    });
 
     return (
         <div className="space-y-4">
@@ -57,7 +74,7 @@ export function DataTable<TData, TValue>({
                     <TableBody>
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id}>
+                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -76,6 +93,7 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
 
+            {/* 페이지네이션 */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                     <span className="text-sm">Rows per page</span>
@@ -120,4 +138,4 @@ export function DataTable<TData, TValue>({
             </div>
         </div>
     );
-} 
+}

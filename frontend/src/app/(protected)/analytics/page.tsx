@@ -57,7 +57,7 @@ export default function TransactionsPage() {
                     username: string;
                 };
                 message?: string;
-            }>('/v1/users/me');
+            }>('/api/v1/users/me');
 
             if (response?.result?.id) {
                 const currentUserId = response.result.id;
@@ -135,7 +135,7 @@ export default function TransactionsPage() {
                 suppressHydrationWarning
             >
                 <motion.h1 variants={fadeInUp} className="text-2xl font-bold w-full text-left" suppressHydrationWarning>
-                    분석 페이지
+                    수익률 분석
                 </motion.h1>
 
                 <motion.div

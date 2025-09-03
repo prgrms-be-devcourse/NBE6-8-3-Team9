@@ -29,7 +29,8 @@ export function MainNav({
         { href: "/", label: "Home" },
         { href: "/exchange", label: "Dashboard" },
         { href: "/wallet", label: "Wallet" },
-        { href: "/transactions", label: "Transactions" },
+        { href: "/orders", label: "Orders"},
+        { href: "/trades", label: "Trades" },
         { href: "/analytics", label: "Analytics" },
         { href: "/admin/coins/new", label: "Admin" },
     ];

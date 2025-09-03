@@ -1,6 +1,7 @@
 package com.back.back9.domain.orders.trigger.entity
 
 import com.back.back9.domain.coin.entity.Coin
+import com.back.back9.domain.orders.orders.entity.Orders
 import com.back.back9.domain.orders.orders.entity.OrdersMethod
 import com.back.back9.domain.tradeLog.entity.TradeType
 import com.back.back9.domain.user.entity.User
@@ -19,6 +20,11 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "triggers")
 class Trigger(
+
+    @OneToOne
+    @JoinColumn(name = "order_id")
+    var order: Orders? = null,
+
     @ManyToOne @JoinColumn(name = "user_id")
     var user: @NotNull User? = null,
 
@@ -49,6 +55,7 @@ class Trigger(
 ) : BaseEntity() {
     // ✅ Hibernate 용 no-args 생성자
     constructor() : this(
+        order = null,
         user = null,
         wallet = null,
         coin = null,

@@ -1,19 +1,20 @@
 package com.back.back9.domain.orders.trigger.service
 
 import com.back.back9.domain.coin.repository.CoinRepository
-import com.back.back9.domain.orders.orders.dto.OrderResponse
 import com.back.back9.domain.orders.orders.dto.OrdersRequest
+import com.back.back9.domain.orders.orders.entity.Orders
 import com.back.back9.domain.orders.orders.entity.OrdersMethod
+import com.back.back9.domain.orders.orders.entity.OrdersStatus
+import com.back.back9.domain.orders.orders.repository.OrdersRepository
 import com.back.back9.domain.orders.orders.service.OrdersService
-import com.back.back9.domain.orders.price.fetcher.ExchangePriceFetcher
 import com.back.back9.domain.tradeLog.entity.TradeType
 import com.back.back9.domain.orders.trigger.entity.Direction
-import com.back.back9.domain.orders.trigger.entity.Direction.*
 import com.back.back9.domain.orders.trigger.entity.Trigger
 import com.back.back9.domain.orders.trigger.entity.TriggerStatus
 import com.back.back9.domain.orders.trigger.repository.TriggerRepository
 import com.back.back9.domain.orders.trigger.support.RedisKeys
 import com.back.back9.domain.wallet.repository.WalletRepository
+import com.back.back9.global.websocket.notification.service.NotificationService
 import jakarta.transaction.Transactional
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
@@ -35,67 +36,38 @@ class TriggerService(
     private val coinRepository: CoinRepository,
     private val redis: StringRedisTemplate,
     private val ordersService: OrdersService,
+    private val notificationService: NotificationService,
+    private val ordersRepository: OrdersRepository
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+    // ===== trigger 등록  =====
     @Transactional
-    fun registerFromOrder(walletId: Long, request: OrdersRequest): OrderResponse {
+    fun registerFromOrder(walletId: Long, order: Orders): Trigger {
         val wallet = walletRepository.findById(walletId)
             .orElseThrow { IllegalArgumentException("지갑을 찾을 수 없습니다.") }
-        val coin = coinRepository.findBySymbol(request.coinSymbol)
+        val coin = coinRepository.findById(order.coin?.id ?: 0)
             .orElseThrow { IllegalArgumentException("코인을 찾을 수 없습니다.") }
 
         // BUY → DOWN, SELL → UP 으로 방향 결정 (저점 매수 / 고점 매도 전략)
-        val direction = if (request.tradeType == TradeType.BUY) Direction.DOWN else Direction.UP
+        val direction = if (order.tradeType == TradeType.BUY) Direction.DOWN else Direction.UP
 
         val trigger = Trigger(
+            order = order,
             user = wallet.user,
             wallet = wallet,
             coin = coin,
-            tradeType = request.tradeType!!,
-            ordersMethod = request.ordersMethod!!,
+            tradeType = order.tradeType,
+            ordersMethod = order.ordersMethod,
             direction = direction,
-            threshold = request.price,
-            quantity = request.quantity,
-            executePrice = request.price,
+            threshold = order.price,
+            quantity = order.quantity,
+            executePrice = order.price,
             status = TriggerStatus.PENDING,
             expiresAt = null
         )
 
         val saved = triggerRepository.save(trigger)
 
-        indexToRedis(saved)
-
-        return OrderResponse.fromLimit(saved)
-    }
-    // ===== 등록 =====
-
-    /**
-     * 예약 생성 (정본: DB / 런타임 인덱스: Redis)
-     */
-    @Transactional
-    fun register(trigger: Trigger): Trigger {
-        val wallet = trigger.wallet?.let { walletRepository.findById(it.id!!) }
-            ?.orElseThrow { IllegalArgumentException("지갑을 찾을 수 없습니다.") }
-        val coin = trigger.coin?.let { coinRepository.findById(it.id!!) }
-            ?.orElseThrow { IllegalArgumentException("코인을 찾을 수 없습니다.") }
-
-        val t = Trigger(
-            user = wallet?.let { it.user!! },
-            wallet = wallet,
-            coin = coin,
-            tradeType = trigger.tradeType,
-            ordersMethod = trigger.ordersMethod,
-            direction = trigger.direction,
-            threshold = trigger.threshold,
-            quantity = trigger.quantity,
-            executePrice = trigger.executePrice,
-            status = TriggerStatus.PENDING,
-            expiresAt = trigger.expiresAt
-        )
-
-        val saved = triggerRepository.save(t)
-
-        // Redis 인덱싱
         indexToRedis(saved)
 
         return saved
@@ -105,7 +77,7 @@ class TriggerService(
      * DB의 PENDING 트리거들을 Redis 인덱스로 재구성.
      * - 앱 재시작 / Redis 초기화 / 장애 복구 시 호출
      */
-    @Transactional // 조회만 하므로 readOnly 권장
+    @Transactional
     fun rebuildAllPending() {
         val rows = triggerRepository.findAllPending(TriggerStatus.PENDING, LocalDateTime.now())
         rows.forEach { indexToRedis(it) }
@@ -135,8 +107,10 @@ class TriggerService(
         when (t.direction) {
             Direction.UP   -> score?.let { redis.opsForZSet().add(RedisKeys.upZset(sym), id, it) }
             Direction.DOWN -> score?.let { redis.opsForZSet().add(RedisKeys.downZset(sym), id, it) }
-            null -> { /* TODO: 방향이 없을 경우 처리 */ }
-        }
+            null -> {
+                log.error("Trigger direction is null → 인덱싱 불가 (id=$id, symbol=$sym)")
+                throw IllegalStateException("Trigger direction is null")
+            }        }
     }
     // ===== 실시간 가격 틱 반영 / 발화 =====
 
@@ -150,16 +124,28 @@ class TriggerService(
     fun onPriceTick(symbol: String, pNow: BigDecimal) {
         val latestKey = RedisKeys.latestPrice(symbol)
         val prevStr = redis.opsForValue().get(latestKey)
-        val pPrev = prevStr?.toBigDecimalOrNull() ?: pNow
+        val pPrev = prevStr?.toBigDecimalOrNull()
+
+        if (pPrev != null && pNow.compareTo(pPrev) == 0) {
+            // log.debug("가격 변동 없음: $symbol -> $pNow") // 필요하면 debug 로깅만
+            return
+        }
 
         // 최신가 갱신
         redis.opsForValue().set(latestKey, pNow.toPlainString())
 
         when {
-            pNow > pPrev -> fireRangeUp(symbol, pPrev, pNow)
-            pNow < pPrev -> fireRangeDown(symbol, pNow, pPrev)
-            else -> { 
-                log.info("fire 해당 없음")
+            pPrev == null -> {
+                // 첫 tick → 이전 값 없을 때는 그냥 저장만
+                log.debug("첫 시세 기록: $symbol -> $pNow")
+            }
+            pNow > pPrev -> {
+                // 가격 상승 구간 → SELL 트리거 검사
+                fireRangeUp(symbol, pPrev, pNow)
+            }
+            pNow < pPrev -> {
+                // 가격 하락 구간 → BUY 트리거 검사
+                fireRangeDown(symbol, pNow, pPrev)
             }
         }
     }
@@ -195,28 +181,22 @@ class TriggerService(
             if (isFirst != true) continue
 
             try {
-                // 발화 메타 로드 Map
-                val meta: Map<String, String> =
-                    redis.opsForHash<String, String>().entries(RedisKeys.triggerHash(id))
+                val trigger = triggerRepository.findById(id.toLong())
+                    .orElseThrow { IllegalStateException("Trigger $id not found") }
 
-                // 값 꺼내기 (없으면 예외)
-                val walletId = meta.getValue("walletId").toLong()
-                val coinSymbol = meta.getValue("coinSymbol")
-                val tradeType = TradeType.valueOf(meta.getValue("tradeType"))
-                val ordersMethod = OrdersMethod.valueOf(meta.getValue("ordersMethod"))
-                val quantity = BigDecimal(meta.getValue("quantity"))
-                val executePrice = BigDecimal(meta.getValue("executePrice"))
+                val order = trigger.order
+                    ?: throw IllegalStateException("Trigger $id has no linked order")
 
-                // 기존 주문 로직 재사용
-                val orq = OrdersRequest(
-                    coinSymbol = coinSymbol,
-                    tradeType = tradeType,
-                    ordersMethod = ordersMethod,
-                    price = executePrice,
-                    quantity = quantity
-                )
-                ordersService.executeMarketOrder(walletId, orq)
-                log.info("✅ Trigger ${id} fired, BUY 주문 체결됨: $orq")
+                order.markFilled() // 또는 order.ordersStatus = OrdersStatus.FILLED
+                ordersRepository.save(order)
+
+                trigger.status = TriggerStatus.FIRED
+                trigger.firedAt = LocalDateTime.now()
+                triggerRepository.save(trigger)
+
+                notificationService.sendOrderNotification(trigger.wallet!!.id!!, order)
+
+                log.info("✅ Trigger $id fired, 주문 체결됨: orderId=${order.id}")
 
             } finally {
                 // 1회성 트리거면 인덱스 제거
@@ -232,6 +212,5 @@ class TriggerService(
         if (t.status == TriggerStatus.FIRED) return
         t.status = TriggerStatus.FIRED
         t.firedAt = LocalDateTime.now()
-        // JPA dirty checking으로 반영
     }
 }

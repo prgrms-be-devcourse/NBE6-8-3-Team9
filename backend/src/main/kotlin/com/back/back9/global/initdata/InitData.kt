@@ -11,11 +11,14 @@ import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Component
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.springframework.security.crypto.password.PasswordEncoder
+
 @Component
 class InitData(
     private val userRepository: UserRepository,
     private val walletRepository: WalletRepository,
-    private val coinRepository: CoinRepository
+    private val coinRepository: CoinRepository,
+    private val passwordEncoder: PasswordEncoder
 ) {
     private val log: Logger = LoggerFactory.getLogger(InitData::class.java)
     @PostConstruct
@@ -24,12 +27,13 @@ class InitData(
 //            log.info("Initdata 이미 존재")
 //            return
 //        } // 중복 삽입 방지
+//        val encodedPassword = passwordEncoder.encode("user")
 //
 //        val user1 = userRepository.save(
 //            User.builder()
 //                .userLoginId("user1")
 //                .username("유저1")
-//                .password("password") // 실제에선 반드시 인코딩 필요
+//                .password(encodedPassword) // 실제에선 반드시 인코딩 필요
 //                .role(User.UserRole.ADMIN)
 //                .build()
 //        )

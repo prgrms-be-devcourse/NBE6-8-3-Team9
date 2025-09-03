@@ -48,15 +48,16 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers(
-                    "/", "/api/v1/users/login", "/api/v1/users/register",
-                    "/api/v1/users/register-admin", "/api/v1/users/logout",
-                    "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
-                    "/oauth2/**", "/login/oauth2/**", "/login", "/error",
-                    "/favicon.ico", "/robots.txt", "/sitemap.xml",
-                    "/css/**", "/js/**", "/images/**", "/static/**",
-                    "/actuator/health/**", "/actuator/info",
-                    "/api/actuator/health/**", "/api/actuator/info"
-                ).permitAll()
+                            "/", "/api/v1/users/login", "/api/v1/users/register",
+                            "/api/v1/users/register-admin", "/api/v1/users/logout",
+                            "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
+                            "/oauth2/**", "/login/oauth2/**", "/login", "/error",
+                            "/favicon.ico", "/robots.txt", "/sitemap.xml",
+                            "/css/**", "/js/**", "/images/**", "/static/**",
+                            "/ws/**",
+                            "/actuator/health/", "/actuator/info",
+                            "/api/actuator/health/", "/api/actuator/info"
+                    ).permitAll()
                     .requestMatchers("/api/v1/adm/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             }
