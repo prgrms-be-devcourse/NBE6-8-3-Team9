@@ -33,7 +33,7 @@ export const CoinList = ({ initialCoins, onSelect }: CoinListProps) => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const me = await apiCall<any>("/v1/users/me", { method: "GET" });
+                const me = await apiCall<any>("/api/v1/users/me", { method: "GET" });
                 setRole(me.result.role);
                 console.log(me.result.role);
             } catch (error) {

@@ -86,7 +86,7 @@ export default function TradingPage() {
                 {selectedCoin && (
                     <>
                         <PriceSummary coin={selectedCoin} />
-                        <CandleChart market={selectedCoin.market} intval={CandleInterval.MIN_1} />
+                        <CandleChart market={selectedCoin.market} intval={CandleInterval.HOUR_1} />
                         <TradeForm selectedCoin={selectedCoin} />
                     </>
                 )}
