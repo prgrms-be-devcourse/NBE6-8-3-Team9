@@ -1,8 +1,8 @@
-// app/wallet/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiCall } from "@/lib/api/client";
@@ -39,6 +39,7 @@ function Loading() {
 }
 
 export default function WalletPage() {
+    const router = useRouter();
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -61,32 +62,30 @@ export default function WalletPage() {
         setMounted(true);
     }, []);
 
-    // 2) 현재 사용자 조회 -> userId 설정
+    // 2) 인증 체크 및 userId 설정
     useEffect(() => {
         let cancelled = false;
 
-        const loadUser = async () => {
+        const checkAuthAndLoadUser = async () => {
             try {
-                // 유저 조회는 v1
                 const me = await apiCall<any>("/api/v1/users/me", { method: "GET" });
                 const id = me?.result?.id;
                 if (!id) {
-                    setErrorMessage("로그인이 필요합니다.");
-                    // 필요 시: window.location.href = "/login";
+                    router.replace("/login");
                     return;
                 }
                 if (!cancelled) setUserId(id);
             } catch (e: any) {
-                if (!cancelled) setErrorMessage(e?.message || "사용자 정보를 가져올 수 없습니다.");
+                router.replace("/login");
             }
         };
 
-        if (mounted) loadUser();
+        if (mounted) checkAuthAndLoadUser();
 
         return () => {
             cancelled = true;
         };
-    }, [mounted]);
+    }, [mounted, router]);
 
     // 3) 지갑 데이터 조회
     useEffect(() => {
@@ -151,7 +150,7 @@ export default function WalletPage() {
         <motion.div
             className="container py-8 space-y-6"
             variants={stagger(0.1)}
-            initial={false}   // ✅ 첫 렌더에서 애니메이션 초기상태 미적용
+            initial={false}
             animate="show"
         >
             <motion.h1 variants={fadeInUp} className="text-2xl font-bold" initial={false}>
