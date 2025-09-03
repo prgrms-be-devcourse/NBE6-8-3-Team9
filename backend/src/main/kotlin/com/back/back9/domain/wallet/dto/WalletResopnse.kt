@@ -4,8 +4,8 @@ import com.back.back9.domain.wallet.entity.CoinAmount
 import com.back.back9.domain.wallet.entity.Wallet
 
 data class WalletResponse(
-    val walletId: Long,
-    val userId: Long,
+    val walletId: Long?,
+    val userId: Long?,
     val address: String,
     val balance: java.math.BigDecimal,
     val coinAmounts: List<CoinAmountResponse>

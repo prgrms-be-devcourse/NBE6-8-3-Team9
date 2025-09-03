@@ -9,39 +9,19 @@ RUN apt-get update \
 
 WORKDIR /app
 
+# Next.js 빌드 산출물 복사 (CI가 미리 생성)
 COPY .next/standalone ./
 COPY .next ./.next
 COPY public ./public
 
+# Nginx 템플릿 & start script
 COPY docker/nginx.conf.template /etc/nginx/conf.d/default.conf.template
-
-ENV NODE_ENV=production
-ENV APP_PORT=3001
-
-
-RUN cat > /usr/local/bin/start.sh <<'SH'
-#!/usr/bin/env bash
-set -e
-
-# Nginx 설정 치환
-envsubst '$PORT $APP_PORT' \
-  < /etc/nginx/conf.d/default.conf.template \
-  > /etc/nginx/conf.d/default.conf
-
-# Next 서버 백그라운드 실행 (127.0.0.1 바인딩)
-HOSTNAME=127.0.0.1 PORT=$APP_PORT \
-  node server.js &
-
-#  최대 20초 대기하며 Next 준비 확인
-for i in {1..20}; do
-  if curl -fs http://127.0.0.1:$APP_PORT; then
-    break
-  fi
-  sleep 1
-done
-
-# Nginx 포그라운드 실행
-exec nginx -g 'daemon off;'
-SH
+COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
+ENV NODE_ENV=production \
+    APP_PORT=3001
+
+EXPOSE 80
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["/usr/local/bin/start.sh"]

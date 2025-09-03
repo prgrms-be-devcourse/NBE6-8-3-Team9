@@ -102,7 +102,7 @@ public class AuthTokenServiceTest {
 
         assertThat(parsedPayload).containsAllEntriesOf(
                 Map.of(
-                        "id", user.getId(),
+                        "id", user.id,
                         "userLoginId", user.getUserLoginId(),
                         "username", user.getUsername()
                 )

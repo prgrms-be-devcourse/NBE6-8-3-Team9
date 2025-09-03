@@ -29,7 +29,7 @@ export default function LoginPage() {
         const checkAlreadyLoggedIn = async () => {
             try {
                 // API 클라이언트를 사용하여 일관된 URL과 설정으로 인증 확인
-                const response = await apiCall('/v1/users/me');
+                const response = await apiCall('/api/v1/users/me');
 
                 if (response) {
                     // 이미 로그인되어 있으면 대시보드로 리다이렉트
@@ -90,10 +90,12 @@ export default function LoginPage() {
 
     const onSubmit = async (values: any) => {
         try {
+            setSuccessMessage(null); // 로그인 시도 시 회원가입 성공 메시지 초기화
+            setError(null); // 이전 에러도 초기화
             console.log('로그인 시도:', values.userLoginId);
 
             // API 클라이언트를 사용하여 일관된 설정으로 로그인 요청
-            const data = await apiCall<any>('/v1/users/login', {
+            const data = await apiCall<any>('/api/v1/users/login', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
@@ -107,17 +109,19 @@ export default function LoginPage() {
             } else {
                 console.log('로그인 실패 - 토큰 없음:', data);
                 setError((data as any)?.message || "로그인 실패");
+                setSuccessMessage(null); // 로그인 실패 시 회원가입 성공 메시지 숨김
             }
         } catch (error) {
             console.error('로그인 오류:', error);
             setError("로그인 중 오류가 발생했습니다.");
+            setSuccessMessage(null); // 로그인 에러 시 회원가입 성공 메시지 숨김
         }
     };
 
     const handleGoogleLogin = () => {
         try {
             const backendUrl = process.env.NODE_ENV === 'production'
-                ? 'https://back9-backend-latest.onrender.com'
+                ? 'https://d64t5u28gt0rl.cloudfront.net'
                 : 'http://localhost:8080';
 
             console.log('백엔드 URL:', backendUrl);
@@ -225,4 +229,3 @@ export default function LoginPage() {
         </div>
     );
 }
-

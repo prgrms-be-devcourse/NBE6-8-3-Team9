@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fadeInUp } from "@/lib/motion";
 import { authApi } from "@/lib/api/auth";
-import type { userRegisterDto } from '@/lib/types/user';
+import type { ApiResponse } from '@/lib/types/user';
 
 const schema = z.object({
     userLoginId: z.string().min(1, "아이디를 입력해주세요."),
@@ -59,7 +59,6 @@ export default function RegisterPage() {
         setError(null);
 
         try {
-            // authApi.register 호출 - 정확한 타입 매핑
             const data = await authApi.register({
                 userLoginId: values.userLoginId,
                 password: values.password,
@@ -67,43 +66,65 @@ export default function RegisterPage() {
                 username: values.username,
             });
 
-            // 회원가입 성공 처리 - ApiResponse 구조에 맞게 수정
-            if (data && data.data) {
-                alert('회원가입이 완료되었습니다!');
-                setTimeout(() => {
-                    router.replace("/login?message=register_success");
-                }, 500);
-            } else if (data) {
-                // 성공했지만 data가 없는 경우도 성공으로 처리
-                alert('회원가입이 완료되었습니다!');
-                setTimeout(() => {
-                    router.replace("/login?message=register_success");
-                }, 500);
+            if (!data) {
+                setError("서버 응답이 없습니다.");
+                return;
             }
 
+            // 백엔드가 200으로 응답해도 code/status로 실패 분기
+            if (data.code >= 400 || data.status === 'fail') {
+                if (data.message?.includes('아이디') || data.message?.includes('ID')) {
+                    form.setError("userLoginId", {
+                        type: "server",
+                        message: data.message || "이미 존재하는 아이디입니다."
+                    });
+                } else if (data.message?.includes('유저이름') || data.message?.includes('이름')) {
+                    form.setError("username", {
+                        type: "server",
+                        message: data.message || "이미 존재하는 유저이름입니다."
+                    });
+                } else if (data.message?.includes('비밀번호')) {
+                    form.setError("password", {
+                        type: "server",
+                        message: data.message || "비밀번호 오류입니다."
+                    });
+                } else {
+                    setError(data.message || "회원가입에 실패했습니다. 다시 시도해주세요.");
+                }
+                return;
+            }
+
+            // 성공 처리
+            alert('회원가입이 완료되었습니다!');
+            setTimeout(() => {
+                router.replace("/login?message=register_success");
+            }, 500);
+            return;
         } catch (error: any) {
             console.error('회원가입 요청 에러:', error);
 
-            // 에러 메시지에 따라 특정 필드에 에러 설정
-            if (error.message?.includes('아이디') || error.message?.includes('ID')) {
+            // error가 객체가 아닐 수도 있으니 안전하게 처리
+            const msg = error?.message || error?.msg || "회원가입에 실패했습니다. 다시 시도해주세요.";
+
+            if (msg.includes('아이디') || msg.includes('ID')) {
                 form.setError("userLoginId", {
                     type: "server",
-                    message: error.message || "이미 존재하는 아이디입니다."
+                    message: msg
                 });
-            } else if (error.message?.includes('유저이름') || error.message?.includes('이름')) {
+            } else if (msg.includes('유저이름') || msg.includes('이름')) {
                 form.setError("username", {
                     type: "server",
-                    message: error.message || "이미 존재하는 유저이름입니다."
+                    message: msg
                 });
-            } else if (error.message?.includes('비밀번호')) {
+            } else if (msg.includes('비밀번호')) {
                 form.setError("password", {
                     type: "server",
-                    message: error.message || "비밀번호 오류입니다."
+                    message: msg
                 });
             } else {
-                // 기타 에러는 전체 에러로 표시
-                setError(error.message || "회원가입에 실패했습니다. 다시 시도해주세요.");
+                setError(msg);
             }
+            return;
         } finally {
             setIsLoading(false);
         }

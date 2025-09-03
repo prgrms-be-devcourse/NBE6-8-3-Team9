@@ -2,9 +2,9 @@
 <br>
 
 
-[![Back9-Home-orange.png](https://i.postimg.cc/vTbwcMt9/Back9-Home-orange.png)](https://postimg.cc/Pp3RRgcr)
+[![Back9page.png](https://i.postimg.cc/gcwLdYQB/Back9page.png)](https://postimg.cc/8sSzmV1h)
 
-[`가상회폐 모의투자 시스템 링크`](https://peuronteuendeu.onrender.com/)
+[`가상회폐 모의투자 시스템 링크`](https://d64t5u28gt0rl.cloudfront.net/)
 
 <br>
 
@@ -17,7 +17,7 @@
 <br>
 
 ## 소개
-- 데브코스 6기 8회차 9팀의 2차 프로젝트로 사용된 레포지토리 입니다.<br>
+- 데브코스 6기 8회차 9팀의 3차 프로젝트로 사용된 레포지토리 입니다.<br>
 
 - 실제 자금 없이 안전하게 가상화폐 투자를 체험할 수 있는 모의투자 플랫폼입니다. 회원별 지갑이 자동 생성되며, 비트코인, 이더리움, 도지코인 등 주요 코인의 실시간 시세를 기반으로 거래할 수 있는 서비스를 제공합니다.
 
@@ -25,12 +25,13 @@
 
 ## 기술스택
 ### 백엔드
-- [`Spring boot`](https://spring.io/)
+- [`Spring boot (with Kotlin`](https://spring.io/)
 - [`JWT`]
 - [`OAuth2.0`]
 - [`Spring Security`]
 - [`Spring Data JPA`]
 - [`REST API`]
+- ['Websocket']
 - [`PostgreSQL(supabase 사용)`](https://supabase.com/)
 
 ### 프론트 엔드
@@ -39,14 +40,14 @@
 - [`Tailwind CSS`](https://tailwindcss.com/)
 
 ### 배포 
-- [`Render`](https://render.com/)
+- [`aws`](https://aws.amazon.com/ko/)
 
 <br>
 
 ## 빌드 및 사용법
 ### 서비스 접속
 - 실제 서비스는 아래 URL에서 접속 가능합니다.<br>
-  [https://peuronteuendeu.onrender.com](https://peuronteuendeu.onrender.com)
+  [https://d64t5u28gt0rl.cloudfront.net](https://d64t5u28gt0rl.cloudfront.net)
 
 ### 로컬 빌드 및 실행 
 1. 깃허브 주소를 프로젝트 폴더로 다운 받는다

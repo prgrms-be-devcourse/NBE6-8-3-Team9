@@ -18,17 +18,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 class SecurityConfig(
-        private val customAuthenticationFilter: CustomAuthenticationFilter,
-        private val oAuth2SuccessHandler: OAuth2SuccessHandler,
-        private val cookieAuthorizationRequestRepository: HttpCookieOAuth2AuthorizationRequestRepository
+    private val customAuthenticationFilter: CustomAuthenticationFilter,
+    private val oAuth2SuccessHandler: OAuth2SuccessHandler,
+    private val cookieAuthorizationRequestRepository: HttpCookieOAuth2AuthorizationRequestRepository
 ) {
 
     @Bean
     fun corsConfigurationSource(): UrlBasedCorsConfigurationSource {
         val config = CorsConfiguration()
         config.allowCredentials = true
-        config.addAllowedOrigin("http://localhost:3000") // 개발 환경에서만 허용, 운영 시 실제 프론트 주소로 변경
-        // config.addAllowedOrigin("https://peuronteuendeu.onrender.com") // 운영 환경 예시
+        config.allowedOriginPatterns = listOf("http://localhost:3000", "https://d64t5u28gt0rl.cloudfront.net")
         config.addAllowedHeader("*")
         config.addAllowedMethod("*")
         config.addExposedHeader("Set-Cookie")
@@ -40,61 +39,64 @@ class SecurityConfig(
 
     @Bean
     fun securityFilterChain(
-            http: HttpSecurity,
-            customOAuth2UserService: CustomOAuth2UserService
+        http: HttpSecurity,
+        customOAuth2UserService: CustomOAuth2UserService
     ): SecurityFilterChain {
         http
-                .csrf { it.disable() }
+            .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
-                .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
-            it.requestMatchers(
+                it.requestMatchers(
                             "/", "/api/v1/users/login", "/api/v1/users/register",
                             "/api/v1/users/register-admin", "/api/v1/users/logout",
                             "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                             "/oauth2/**", "/login/oauth2/**", "/login", "/error",
                             "/favicon.ico", "/robots.txt", "/sitemap.xml",
-                            "/css/**", "/js/**", "/images/**", "/static/**", "/api/exchange/**"
+                            "/css/**", "/js/**", "/images/**", "/static/**",
+                            "/ws/**",
+                            "/actuator/health/", "/actuator/info", "/actuator/health/**",
+                            "/api/actuator/health/", "/api/actuator/info", "/api/actuator/health/**"
                     ).permitAll()
                     .requestMatchers("/api/v1/adm/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
-        }
+            }
             .exceptionHandling {
-            it.authenticationEntryPoint { _, response, _ ->
+                it.authenticationEntryPoint { _, response, _ ->
                     response.status = HttpServletResponse.SC_UNAUTHORIZED
-                response.contentType = "application/json; charset=UTF-8"
-                response.writer.write(
+                    response.contentType = "application/json; charset=UTF-8"
+                    response.writer.write(
                         """{"status":"fail","code":401,"message":"인증이 필요합니다.","result":null}"""
-                )
-            }
-        }
-            .oauth2Login {
-            it.authorizationEndpoint { authz ->
-                    authz.baseUri("/oauth2/authorize")
-                            .authorizationRequestRepository(cookieAuthorizationRequestRepository)
-            }
-            it.redirectionEndpoint { redir ->
-                    redir.baseUri("/oauth2/callback/*")
-            }
-            it.userInfoEndpoint { userInfo ->
-                    userInfo.userService(customOAuth2UserService)
-            }
-            it.successHandler(oAuth2SuccessHandler)
-            it.failureHandler { _, res, ex ->
-                    ex.printStackTrace()
-                val errorMsg = if (ex is OAuth2AuthenticationException) {
-                    val err: OAuth2Error = ex.error
-                    err.errorCode + (err.description?.let { ": $it" } ?: "")
-                } else {
-                    ex.message ?: "Unknown error"
+                    )
                 }
-                res.status = HttpServletResponse.SC_UNAUTHORIZED
-                res.contentType = "application/json; charset=UTF-8"
-                res.writer.write(
-                        """{"status":"fail","code":401,"message":"${errorMsg.replace("\"", "\\\"")}"}"""
-                )
             }
-        }
+            .oauth2Login {
+                it.authorizationEndpoint { authz ->
+                    authz.baseUri("/oauth2/authorize")
+                        .authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                }
+                it.redirectionEndpoint { redir ->
+                    redir.baseUri("/oauth2/callback/*")
+                }
+                it.userInfoEndpoint { userInfo ->
+                    userInfo.userService(customOAuth2UserService)
+                }
+                it.successHandler(oAuth2SuccessHandler)
+                it.failureHandler { _, res, ex ->
+                    ex.printStackTrace()
+                    val errorMsg = if (ex is OAuth2AuthenticationException) {
+                        val err: OAuth2Error = ex.error
+                        err.errorCode + (err.description?.let { ": $it" } ?: "")
+                    } else {
+                        ex.message ?: "Unknown error"
+                    }
+                    res.status = HttpServletResponse.SC_UNAUTHORIZED
+                    res.contentType = "application/json; charset=UTF-8"
+                    res.writer.write(
+                        """{"status":"fail","code":401,"message":"${errorMsg.replace("\"", "\\\"")}"}"""
+                    )
+                }
+            }
             .logout { it.disable() }
             .addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
@@ -103,7 +105,7 @@ class SecurityConfig(
 
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager =
-    config.authenticationManager
+        config.authenticationManager
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()

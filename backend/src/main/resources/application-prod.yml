@@ -1,0 +1,87 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${RDS_HOST}:${RDS_PORT:5432}/${RDS_DB}?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:${RDS_USER}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${RDS_PASSWORD}}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      max-lifetime: 1800000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      # username: ${SPRING_REDIS_USERNAME:}
+      # password: ${SPRING_REDIS_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: profile, email
+            redirect-uri: "https://d64t5u28gt0rl.cloudfront.net/oauth2/callback/{registrationId}"
+
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: WARN
+    org.hibernate.orm.jdbc.extract: WARN
+    org.springframework.transaction.interceptor: WARN
+    org.springframework.security.oauth2: INFO
+    org.springframework.security.web: INFO
+    root: INFO
+
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true     # 외부는 HTTPS만 허용
+        same-site: None
+        domain: d64t5u28gt0rl.cloudfront.net
+        max-age-seconds: 31536000
+
+# 단일 도메인 쿠키/프론트 설정 (필요 시 ENV로 덮어쓰기)
+app:
+  oauth2:
+    frontend-url: ${FRONTEND_URL:}
+    cookie-domain: d64t5u28gt0rl.cloudfront.net
+  cookie:
+    same-site: None
+    secure: true
+    domain: d64t5u28gt0rl.cloudfront.net
+    max-age-seconds: 31536000
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: "never"
+      probes:
+        enabled: true

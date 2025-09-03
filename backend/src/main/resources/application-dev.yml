@@ -29,7 +29,7 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID:1017218402748-d5dd60n54002saejbfsma5r4tjnkrk1o.apps.googleusercontent.com}
             client-secret: ${GOOGLE_CLIENT_SECRET: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}
             scope: profile, email
-            redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:8888/oauth2/callback/google}
+            redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:8080/oauth2/callback/google}
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/auth
@@ -48,7 +48,7 @@ logging:
 app:
   oauth2:
     cookie-domain: ${OAUTH2_COOKIE_DOMAIN:}
-    frontend-url: ${FRONTEND_URL:http://localhost:8888}
+    frontend-url: ${FRONTEND_URL:http://localhost:3000}
   cookie:
     same-site: Lax
     secure: false

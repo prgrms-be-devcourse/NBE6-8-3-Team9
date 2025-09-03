@@ -273,7 +273,7 @@ class UserControllerTest @Autowired constructor(
                 ?: throw RuntimeException()
 
         // 지갑 정보 조회
-        val wallet: Wallet? = walletRepository.findByUserId(user.id)
+        val wallet: Wallet? = user.id?.let { walletRepository.findByUserId(it) }
 
         Assertions.assertThat(wallet).isNotNull()
         Assertions.assertThat(wallet!!.user.id).isEqualTo(user.id)

@@ -3,8 +3,8 @@ package com.back.back9.domain.wallet.dto
 import com.back.back9.domain.wallet.entity.Wallet
 
 data class WalletBalanceResponse(
-    val walletId: Long,
-    val userId: Long,
+    val walletId: Long?,
+    val userId: Long?,
     val address: String,
     val balance: java.math.BigDecimal
 ) {
