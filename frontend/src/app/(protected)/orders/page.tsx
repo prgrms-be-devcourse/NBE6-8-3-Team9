@@ -20,7 +20,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ordersApi } from "@/lib/api/orders";
 import { apiCall } from "@/lib/api/client";
 import type { OrderResponse } from "@/lib/types/orders";
-import OrderNotification from "@/components/notifications/OrderNotification";
 const statusMap: Record<string, string> = {
     PENDING: "대기",
     FILLED: "체결",
