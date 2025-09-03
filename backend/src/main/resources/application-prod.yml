@@ -35,7 +35,8 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: profile, email
-            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+            redirect-uri: "https://d64t5u28gt0rl.cloudfront.net/oauth2/callback/{registrationId}"
+
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/auth
@@ -58,17 +59,19 @@ server:
     session:
       cookie:
         secure: true     # 외부는 HTTPS만 허용
-        same-site: lax
+        same-site: None
+        domain: d64t5u28gt0rl.cloudfront.net
+        max-age-seconds: 31536000
 
 # 단일 도메인 쿠키/프론트 설정 (필요 시 ENV로 덮어쓰기)
 app:
   oauth2:
     frontend-url: ${FRONTEND_URL:}
-    cookie-domain: ${OAUTH2_COOKIE_DOMAIN:}
+    cookie-domain: d64t5u28gt0rl.cloudfront.net
   cookie:
-    same-site: Lax
-    secure: ${COOKIE_SECURE:true}
-    domain: ${COOKIE_DOMAIN:}
+    same-site: None
+    secure: true
+    domain: d64t5u28gt0rl.cloudfront.net
     max-age-seconds: 31536000
 
 

@@ -26,20 +26,20 @@ import java.util.function.BiConsumer
 @Tag(name = "UserController", description = "API 사용자 컨트롤러")
 @SecurityRequirement(name = "bearerAuth")
 class UserController(
-        private val userService: UserService,
-        private val rq: Rq
+    private val userService: UserService,
+    private val rq: Rq
 ) {
     private val log = LoggerFactory.getLogger(UserController::class.java)
 
     data class UserRegisterReqBody(
-            @field:NotBlank @field:Size(min = 2, max = 30)
+        @field:NotBlank @field:Size(min = 2, max = 30)
         val userLoginId: String,
-    @field:NotBlank @field:Size(min = 2, max = 30)
-    val username: String,
-    @field:NotBlank @field:Size(min = 2, max = 30)
-    val password: String,
-    @field:NotBlank @field:Size(min = 2, max = 30)
-    val confirmPassword: String
+        @field:NotBlank @field:Size(min = 2, max = 30)
+        val username: String,
+        @field:NotBlank @field:Size(min = 2, max = 30)
+        val password: String,
+        @field:NotBlank @field:Size(min = 2, max = 30)
+        val confirmPassword: String
     )
 
     @PostMapping("/register")
@@ -47,12 +47,12 @@ class UserController(
     fun register(@Valid @RequestBody reqBody: UserRegisterReqBody): RsData<UserDto> {
         log.info("회원가입 요청: {}", reqBody)
         val registerResult = userService.register(
-                com.back.back9.domain.user.dto.UserRegisterDto(
-                        reqBody.userLoginId,
-                        reqBody.username,
-                        reqBody.password,
-                        reqBody.confirmPassword
-                )
+            com.back.back9.domain.user.dto.UserRegisterDto(
+                reqBody.userLoginId,
+                reqBody.username,
+                reqBody.password,
+                reqBody.confirmPassword
+            )
         )
         log.info("회원가입 결과: {}", registerResult)
         if (!registerResult.resultCode.startsWith("200")) {
@@ -67,12 +67,12 @@ class UserController(
     @Operation(summary = "관리자 회원가입")
     fun registerAdmin(@Valid @RequestBody reqBody: UserRegisterReqBody): RsData<UserDto> {
         val registerResult = userService.registerAdmin(
-                com.back.back9.domain.user.dto.UserRegisterDto(
-                        reqBody.userLoginId,
-                        reqBody.username,
-                        reqBody.password,
-                        reqBody.confirmPassword
-                )
+            com.back.back9.domain.user.dto.UserRegisterDto(
+                reqBody.userLoginId,
+                reqBody.username,
+                reqBody.password,
+                reqBody.confirmPassword
+            )
         )
         if (!registerResult.resultCode.startsWith("200")) {
             return RsData(registerResult.resultCode, registerResult.msg)
@@ -81,16 +81,16 @@ class UserController(
     }
 
     data class UserLoginReqBody(
-            @field:NotBlank @field:Size(min = 2, max = 30)
+        @field:NotBlank @field:Size(min = 2, max = 30)
         val userLoginId: String,
-    @field:NotBlank @field:Size(min = 2, max = 30)
-    val password: String
+        @field:NotBlank @field:Size(min = 2, max = 30)
+        val password: String
     )
 
     data class UserLoginResBody(
-            val item: UserDto,
-            val apiKey: String,
-            val accessToken: String
+        val item: UserDto,
+        val apiKey: String,
+        val accessToken: String
     )
 
     @PostMapping("/login")
@@ -120,9 +120,9 @@ class UserController(
         rq.setCookie("role", user.role.name)
 
         return RsData(
-                "200-1",
-                "${user.username}님 환영합니다.",
-                UserLoginResBody(UserDto.from(user), user.apiKey!!, accessToken)
+            "200-1",
+            "${user.username}님 환영합니다.",
+            UserLoginResBody(UserDto.from(user), user.apiKey!!, accessToken)
         )
     }
 
@@ -138,11 +138,11 @@ class UserController(
 
         // --- 공통 삭제용 헤더 생성 헬퍼 람다 ---
         val deleteCookieBoth = BiConsumer<String, String> { name, path ->
-                val base = "$name=; Path=$path; Max-Age=0; SameSite=None; Secure; HttpOnly"
+            val base = "$name=; Path=$path; Max-Age=0; SameSite=None; Secure; HttpOnly"
             response.addHeader(HttpHeaders.SET_COOKIE, base)
             response.addHeader(
-                    HttpHeaders.SET_COOKIE,
-                    "$base; Domain=.peuronteuendeu.onrender.com"
+                HttpHeaders.SET_COOKIE,
+                "$base; Domain=d64t5u28gt0rl.cloudfront.net"
             )
         }
 
@@ -156,12 +156,12 @@ class UserController(
 
         // 4) OAuth2 요청용 쿠키들 삭제
         deleteCookieBoth.accept(
-                HttpCookieOAuth2AuthorizationRequestRepository.OAUTH2_AUTH_REQUEST_COOKIE_NAME,
-                "/"
+            HttpCookieOAuth2AuthorizationRequestRepository.OAUTH2_AUTH_REQUEST_COOKIE_NAME,
+            "/"
         )
         deleteCookieBoth.accept(
-                HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
-                "/"
+            HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME,
+            "/"
         )
 
         // 5) SecurityContext 클리어

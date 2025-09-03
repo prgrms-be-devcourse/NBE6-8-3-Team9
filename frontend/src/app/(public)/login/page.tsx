@@ -117,7 +117,7 @@ export default function LoginPage() {
     const handleGoogleLogin = () => {
         try {
             const backendUrl = process.env.NODE_ENV === 'production'
-                ? 'https://back9-backend-latest.onrender.com'
+                ? 'https://d64t5u28gt0rl.cloudfront.net'
                 : 'http://localhost:8080';
 
             console.log('백엔드 URL:', backendUrl);
