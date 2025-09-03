@@ -9,13 +9,8 @@ object CandleInitializationTargets {
     val intervalTargetCount: Map<CandleInterval, Int> = mapOf(
         CandleInterval.SEC to 1000,
         CandleInterval.MIN_1 to 1000,
-        CandleInterval.MIN_3 to 1000,
-        CandleInterval.MIN_5 to 1000,
-        CandleInterval.MIN_10 to 1000,
-        CandleInterval.MIN_15 to 1000,
         CandleInterval.MIN_30 to 1000,
         CandleInterval.HOUR_1 to 1000,
-        CandleInterval.HOUR_4 to 1000,
         CandleInterval.DAY to 500,
         CandleInterval.WEEK to 400,
         CandleInterval.MONTH to 200

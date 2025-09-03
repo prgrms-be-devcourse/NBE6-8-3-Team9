@@ -76,7 +76,7 @@ export interface InitialRequestDTO {
     market: string;
 }
 
-export interface PreviousDTO {
+export interface PreviousRequestDTO {
     /**
      * 캔들 간격
      */

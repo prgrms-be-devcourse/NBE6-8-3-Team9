@@ -86,7 +86,7 @@ class MarketDataIntegrationTest {
     fun testInitialDataSetup() {
         val btc = Coin("KRW-BTC", "비트코인", "Bitcoin")
         coinRepository.save(btc)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         val btcJson = """[{"market":"KRW-BTC","candle_date_time_kst":"2025-08-29T10:20:00","opening_price":70000000.0,"high_price":70100000.0,"low_price":69900000.0,"trade_price":70050000.0,"timestamp":1756417200000,"candle_acc_trade_price":1000000.0,"candle_acc_trade_volume":0.014}]"""
         mockWebServer.enqueue(MockResponse().setBody(btcJson).setHeader("Content-Type", "application/json"))
@@ -108,11 +108,11 @@ class MarketDataIntegrationTest {
     fun testCoinListChangeDetection() {
         val btc = Coin("KRW-BTC", "비트코인", "Bitcoin")
         coinRepository.save(btc)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         val eth = Coin("KRW-ETH", "이더리움", "Ethereum")
         coinRepository.save(eth)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         val marketCodes = provider.getMarketCodes()
         assertThat(marketCodes).containsExactlyInAnyOrder("KRW-BTC", "KRW-ETH")
@@ -127,12 +127,12 @@ class MarketDataIntegrationTest {
     fun testCoinRename() {
         val btc = Coin("KRW-BTC", "비트코인", "Bitcoin")
         coinRepository.save(btc)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         coinRepository.deleteAll()
         val btcNew = Coin("KRW-BTC-NEW", "비트코인 수정", "BitcoinNew")
         coinRepository.save(btcNew)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         val btcJson = """[{"market":"KRW-BTC-NEW","candle_date_time_kst":"2025-08-29T10:25:00","opening_price":71000000.0,"high_price":71100000.0,"low_price":70900000.0,"trade_price":71050000.0,"timestamp":1756417500000,"candle_acc_trade_price":1200000.0,"candle_acc_trade_volume":0.018}]"""
         mockWebServer.enqueue(MockResponse().setBody(btcJson).setHeader("Content-Type", "application/json"))
@@ -154,10 +154,10 @@ class MarketDataIntegrationTest {
     fun testCoinDeletion() {
         val btc = Coin("KRW-BTC", "비트코인", "Bitcoin")
         coinRepository.save(btc)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         coinRepository.deleteAll()
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         assertThat(provider.getMarketCodes()).isEmpty()
         assertThat(redisTemplate.keys("*")).isEmpty()
@@ -172,7 +172,7 @@ class MarketDataIntegrationTest {
     fun testCoinAddition() {
         val eth = Coin("KRW-ETH", "이더리움", "Ethereum")
         coinRepository.save(eth)
-        provider.refreshCache()
+        provider.refreshCache(isInitialLoad = false)
 
         val ethJson = """[{"market":"KRW-ETH","candle_date_time_kst":"2025-08-29T10:20:00","opening_price":3000000.0,"high_price":3010000.0,"low_price":2990000.0,"trade_price":3005000.0,"timestamp":1756417200000,"candle_acc_trade_price":500000.0,"candle_acc_trade_volume":0.166}]"""
         mockWebServer.enqueue(MockResponse().setBody(ethJson).setHeader("Content-Type", "application/json"))

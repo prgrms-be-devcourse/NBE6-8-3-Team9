@@ -10,31 +10,28 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
-// DB에서 실제 코인 정보를 조회하고 캐싱하여 제공하는 Provider.
-
 @Component
 class DatabaseCoinListProvider(
     private val coinService: CoinService,
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: RedisTemplate<String, String>,
 ) {
     private val logger = KotlinLogging.logger {}
-    private var symbolToNameMap: Map<String, String> = mapOf()
-    private var nameToSymbolMap: Map<String, String> = mapOf()
+    @Volatile private var symbolToNameMap: Map<String, String> = mapOf()
+    @Volatile private var nameToSymbolMap: Map<String, String> = mapOf()
 
     @PostConstruct
     fun initialize() {
-        refreshCache()
+        refreshCache(isInitialLoad = true)
     }
-
-    // DB 트랜잭션이 성공적으로 '커밋'된 후에만 이 메서드를 실행합니다.
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleCoinDataChanged(event: CoinDataChangedEvent) {
         logger.info { "코인 데이터 변경 이벤트 수신, 캐시 및 Redis 데이터를 동기화합니다. [이벤트: $event]" }
-        refreshCache()
+        refreshCache(isInitialLoad = false)
     }
 
-    fun refreshCache() {
+    // [수정] 테스트 코드에서 접근할 수 있도록 private 키워드를 제거합니다.
+    fun refreshCache(isInitialLoad: Boolean) {
         val oldSymbols = symbolToNameMap.keys
 
         val allCoins = coinService.findAll()
@@ -45,15 +42,17 @@ class DatabaseCoinListProvider(
             .mapNotNull { coin -> coin.koreanName?.let { it to coin.symbol } }
             .toMap()
 
-        val currentSymbols = symbolToNameMap.keys
-        val deletedSymbols = oldSymbols - currentSymbols
+        logger.info("코인 목록 캐시를 갱신했습니다. 현재 추적 중인 코인: ${allCoins.size}개")
 
+        if (isInitialLoad) return
+
+        val currentSymbols = symbolToNameMap.keys
+
+        val deletedSymbols = oldSymbols - currentSymbols
         if (deletedSymbols.isNotEmpty()) {
             logger.info { "삭제된 코인 감지, 관련 Redis 데이터를 삭제합니다: $deletedSymbols" }
             val keysToDelete = deletedSymbols.flatMap { symbol ->
-                val candleKeys = CandleInterval.entries.map { it.redisKey(symbol) }
-                val latestKey = "$symbol:Latest"
-                candleKeys + latestKey
+                CandleInterval.entries.map { it.redisKey(symbol) }
             }
             if (keysToDelete.isNotEmpty()) {
                 redisTemplate.delete(keysToDelete)
