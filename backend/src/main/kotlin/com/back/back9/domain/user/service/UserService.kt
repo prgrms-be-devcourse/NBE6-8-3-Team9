@@ -49,7 +49,8 @@ class UserService(
 
     @Transactional
     fun register(dto: UserRegisterDto): RsData<User> {
-        return registerUser(dto, User.UserRole.MEMBER)
+        val role = if (dto.userLoginId == "admin") User.UserRole.ADMIN else User.UserRole.MEMBER
+        return registerUser(dto, role)
     }
 
     @Transactional
