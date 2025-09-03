@@ -17,14 +17,13 @@ import {
 } from "@/components/ui/select";
 
 type DataTableProps<TData, TValue> = {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
+    columns: ColumnDef<TData, TValue>[] | undefined;
+    data?: TData[]; // undefined 허용
     pageSize?: number;
-    rowSelection?: RowSelectionState
+    rowSelection?: RowSelectionState;
     // @ts-ignore
-    onRowSelectionChange?: OnChangeFn<RowSelectionState>
-    getRowId?: (row: TData, index: number, parent?: Row<TData>) => string; // ✅ 선택적으로 받기
-
+    onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+    getRowId?: (row: TData, index: number, parent?: Row<TData>) => string;
 };
 
 export function DataTable<TData, TValue>({
@@ -33,26 +32,31 @@ export function DataTable<TData, TValue>({
                                              pageSize = 10,
                                              rowSelection,
                                              onRowSelectionChange,
-                                             getRowId, // ✅ 부모에서 받음
+                                             getRowId,
                                          }: DataTableProps<TData, TValue>) {
+    // columns/data가 undefined/null이면 빈 배열로 대체
+    const safeColumns = Array.isArray(columns) ? columns : [];
+    const safeData = Array.isArray(data) ? data : [];
+
     const table = useReactTable({
-        data,
-        columns,
+        data: safeData,
+        columns: safeColumns,
         initialState: {
             pagination: { pageIndex: 0, pageSize },
         },
-        state: {
-            rowSelection,
-        },
-        onRowSelectionChange,
+        ...(rowSelection !== undefined && {
+            state: { rowSelection },
+            onRowSelectionChange,
+        }),
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getRowId: getRowId ?? ((row: any, index: number) => {
             if (row.id !== undefined && row.id !== null) {
-                return String(row.id);       // ✅ DB id 우선
+                return String(row.id);
             }
-            return String(index);          // ✅ fallback
-        }),    });
+            return String(index);
+        }),
+    });
 
     return (
         <div className="space-y-4">
@@ -84,7 +88,7 @@ export function DataTable<TData, TValue>({
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <TableCell colSpan={safeColumns.length || 1} className="h-24 text-center">
                                     No results.
                                 </TableCell>
                             </TableRow>
@@ -124,8 +128,8 @@ export function DataTable<TData, TValue>({
                         이전
                     </Button>
                     <span className="text-sm">
-            {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
-          </span>
+                        {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+                    </span>
                     <Button
                         variant="ghost"
                         size="sm"

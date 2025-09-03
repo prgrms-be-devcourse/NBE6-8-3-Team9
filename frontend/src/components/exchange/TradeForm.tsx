@@ -53,7 +53,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ selectedCoin }) => {
         const ordersMethod = orderType === "limit" ? "LIMIT" : "MARKET";
 
         try {
-            const me = await apiCall<any>("/v1/users/me", { method: "GET" });
+            const me = await apiCall<any>("/api/v1/users/me", { method: "GET" });
             const walletId = me?.result?.id;
 
             if (!walletId) {
@@ -69,7 +69,7 @@ export const TradeForm: React.FC<TradeFormProps> = ({ selectedCoin }) => {
                 price: price,
             };
 
-            const orderResponse = await apiCall("/orders/wallet/" + walletId, {
+            const orderResponse = await apiCall("/api/orders/wallet/" + walletId, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: { "Content-Type": "application/json" },
