@@ -54,10 +54,10 @@ export function MainNav({
         // window.addEventListener('focus', checkLoginStatus);
         // const interval = setInterval(checkLoginStatus, 30000);
 
-        return () => {
-            window.removeEventListener('focus', checkLoginStatus);
-            clearInterval(interval);
-        };
+        // return () => {
+        //     window.removeEventListener('focus', checkLoginStatus);
+        //     clearInterval(interval);
+        // };
     }, []);
 
     return (
