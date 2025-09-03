@@ -17,7 +17,7 @@ const IntervalDisplayMap: Record<CandleInterval, string> = {
     [CandleInterval.SEC]: "초",
     [CandleInterval.MIN_1]: "1분",
     [CandleInterval.MIN_30]: "30분",
-    [CandleInterval.HOUR_1]: "1시간",
+    [CandleInterval.HOUR_1]: "1분",
     [CandleInterval.DAY]: "1일",
     [CandleInterval.WEEK]: "1주",
     [CandleInterval.MONTH]: "1개월",
